@@ -1,0 +1,4321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tapped — Employee & Attendance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;600;700&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+    --primary:#6366F1;
+    --primary-dark:#4F46E5;
+    --primary-soft:#EEF2FF;
+    --cta:#10B981;
+    --cta-dark:#059669;
+    --cta-soft:#D1FAE5;
+    --bg:#F5F3FF;
+    --surface:#FFFFFF;
+    --text:#1E1B4B;
+    --muted:#5B5678;
+    --border:#E4E0F0;
+    --header:#FFFFFF;
+    --header-text:#1E1B4B;
+    --sidebar:#1E1B4B;
+    --sidebar-text:#C7C9E6;
+    --danger:#DC2626;
+    --danger-soft:#FEE2E2;
+    --warn:#D97706;
+    --warn-soft:#FEF3C7;
+    --info:#0369A1;
+    --info-soft:#E0F2FE;
+    --shadow:0 1px 2px rgba(30,27,75,.06),0 8px 24px rgba(30,27,75,.06);
+    --radius:14px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html,body{
+    font-family:"Fira Sans",Inter,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+}
+
+button,a,.quick-action,.tab-btn{cursor:pointer;}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible{
+    outline:2px solid var(--primary);
+    outline-offset:2px;
+}
+
+.icon{width:18px;height:18px;flex-shrink:0;display:inline-block;vertical-align:-3px;}
+.icon-lg{width:22px;height:22px;}
+
+/* SIDEBAR */
+.sidebar{
+    position:fixed;
+    left:0;top:0;bottom:0;
+    width:248px;
+    background:var(--sidebar);
+    color:var(--sidebar-text);
+    padding:22px 14px;
+    z-index:200;
+    display:flex;
+    flex-direction:column;
+    transition:transform .2s ease-out;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:4px 12px 28px;
+    font-size:22px;
+    font-weight:700;
+}
+
+.logo-mark{
+    width:34px;height:34px;
+    border-radius:10px;
+    background:var(--primary);
+    display:flex;align-items:center;justify-content:center;
+}
+
+.logo span{color:#A5B4FC;}
+
+.menu{list-style:none;flex:1;}
+.menu li{margin-bottom:6px;}
+
+.menu button{
+    width:100%;
+    border:0;
+    background:transparent;
+    color:var(--sidebar-text);
+    padding:11px 12px;
+    border-radius:10px;
+    text-align:left;
+    font-size:14px;
+    font-weight:500;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    transition:background .2s ease,color .2s ease;
+    position:relative;
+}
+
+.menu button:hover{background:rgba(255,255,255,.08);color:#fff;}
+.menu button.active{background:var(--primary);color:#fff;}
+
+.nav-badge{
+    margin-left:auto;
+    min-width:20px;
+    height:20px;
+    padding:0 6px;
+    border-radius:999px;
+    background:#F59E0B;
+    color:#1E1B4B;
+    font-size:11px;
+    font-weight:700;
+    display:none;
+    align-items:center;
+    justify-content:center;
+}
+
+.nav-badge.show{display:inline-flex;}
+
+.sidebar-foot{
+    padding:12px;
+    border-top:1px solid rgba(255,255,255,.08);
+    font-size:12px;
+    color:#A5B4FC;
+}
+
+/* MAIN */
+.main{margin-left:248px;min-height:100vh;}
+
+.topbar{
+    height:68px;
+    background:var(--header);
+    color:var(--header-text);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 28px;
+    position:sticky;
+    top:0;
+    z-index:80;
+    backdrop-filter:blur(10px);
+}
+
+.topbar-left{display:flex;align-items:center;gap:12px;}
+
+.menu-toggle{
+    display:none;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--header-text);
+    width:38px;height:38px;
+    border-radius:10px;
+    align-items:center;
+    justify-content:center;
+}
+
+.page-title{font-size:20px;font-weight:700;}
+.page-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+
+.user{display:flex;align-items:center;gap:10px;}
+.user-meta{text-align:right;}
+.user-meta strong{display:block;font-size:13px;}
+.user-meta span{
+    font-size:11px;
+    color:var(--cta-dark);
+    font-weight:600;
+    background:var(--cta-soft);
+    padding:2px 7px;
+    border-radius:999px;
+}
+
+.avatar{
+    width:38px;height:38px;
+    border-radius:50%;
+    background:var(--primary);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;
+}
+
+.content{padding:24px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* CARDS */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+    margin-bottom:22px;
+}
+
+.stat-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 18px 16px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+}
+
+.stat-card::after{
+    content:"";
+    position:absolute;
+    right:-12px;top:-12px;
+    width:72px;height:72px;
+    border-radius:50%;
+    background:var(--primary-soft);
+}
+
+.stat-icon{
+    width:34px;height:34px;
+    border-radius:9px;
+    background:var(--primary-soft);
+    color:var(--primary);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:10px;
+    position:relative;
+    z-index:1;
+}
+
+.stat-card.warn .stat-icon{background:var(--warn-soft);color:var(--warn);}
+.stat-card.ok .stat-icon{background:var(--cta-soft);color:var(--cta-dark);}
+.stat-card.danger .stat-icon{background:var(--danger-soft);color:var(--danger);}
+
+.stat-label{color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.02em;}
+.stat-value{font-family:"Fira Code",monospace;font-size:28px;font-weight:700;margin-top:4px;}
+.stat-sub{color:var(--muted);font-size:12px;margin-top:4px;}
+
+.panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow:var(--shadow);
+}
+
+.panel-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+}
+
+.panel-title{font-size:16px;font-weight:700;}
+.panel-header small{color:var(--muted);display:block;margin-top:3px;}
+
+/* BUTTONS */
+.btn{
+    border:0;
+    padding:9px 14px;
+    border-radius:var(--btn-radius, 9px);
+    font-size:13px;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:background .2s ease,box-shadow .2s ease;
+}
+
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-secondary{background:#EEF0F7;color:#344054;}
+.btn-secondary:hover{background:#E2E5F0;}
+.btn-danger{background:var(--danger-soft);color:#B91C1C;}
+.btn-danger:hover{background:#FECACA;}
+.btn-blue{background:var(--primary-soft);color:var(--primary-dark);}
+.btn-blue:hover{background:#E0E7FF;}
+.btn-success{background:var(--cta);color:#fff;}
+.btn-success:hover{background:var(--cta-dark);}
+.btn-sm{padding:7px 10px;font-size:12px;}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+
+input,select,textarea{
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:10px 12px;
+    background:var(--surface);
+    outline:none;
+    font-size:13px;
+    font-family:inherit;
+    color:var(--text);
+}
+
+input:focus,select:focus,textarea:focus{border-color:var(--primary);}
+textarea{min-height:80px;resize:vertical;}
+
+.table-wrapper{overflow:auto;border:1px solid var(--border);border-radius:12px;}
+
+table{width:100%;border-collapse:collapse;min-width:980px;}
+
+th{
+    background:var(--header);
+    color:var(--header-text);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    padding:12px 13px;
+    text-align:left;
+    white-space:nowrap;
+}
+
+td{
+    padding:12px 13px;
+    border-top:1px solid #F0EDF6;
+    font-size:13px;
+    white-space:nowrap;
+}
+
+tr:hover td{background:#FAF9FF;}
+
+.badge{
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    display:inline-block;
+}
+
+.badge-green{background:var(--cta-soft);color:#047857;}
+.badge-red{background:var(--danger-soft);color:#B91C1C;}
+.badge-orange{background:var(--warn-soft);color:#B45309;}
+.badge-blue{background:var(--info-soft);color:var(--info);}
+.badge-gray{background:#EEF2F6;color:#64748B;}
+.badge-purple{background:var(--primary-soft);color:var(--primary-dark);}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(30,27,75,.48);
+    z-index:500;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal.show{display:flex;}
+
+.modal-box{
+    background:#fff;
+    border-radius:16px;
+    width:820px;
+    max-width:100%;
+    max-height:90vh;
+    overflow:auto;
+    box-shadow:0 24px 60px rgba(30,27,75,.22);
+}
+
+.modal-header,.modal-footer{
+    padding:18px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.modal-header{border-bottom:1px solid var(--border);}
+.modal-footer{border-top:1px solid var(--border);justify-content:flex-end;gap:10px;}
+.modal-title{font-size:18px;font-weight:700;}
+.close{border:0;background:none;font-size:22px;color:var(--muted);line-height:1;}
+.modal-body{padding:20px;}
+
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full{grid-column:1/-1;}
+.form-group label{font-size:12px;font-weight:700;color:var(--muted);}
+.form-group input,.form-group select,.form-group textarea{width:100%;}
+
+.dashboard-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;}
+.quick-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+
+.quick-action{
+    border:1px solid var(--border);
+    padding:16px;
+    border-radius:12px;
+    background:#fff;
+    transition:border-color .2s ease,background .2s ease;
+    text-align:left;
+    width:100%;
+    cursor:pointer;
+}
+.punch-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;}
+.punch-row .btn{flex:1;min-width:140px;justify-content:center;}
+.punch-status{font-size:13px;color:var(--muted);line-height:1.5;}
+.punch-status strong{color:var(--text);}
+
+.quick-action:hover{border-color:var(--primary);background:var(--primary-soft);}
+.quick-action strong{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:14px;}
+.quick-action span{color:var(--muted);font-size:12px;}
+
+.sheet-status{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--cta-soft);
+    color:#047857;
+    padding:14px;
+    border-radius:10px;
+    font-size:13px;
+}
+
+.pending-list{display:flex;flex-direction:column;gap:10px;}
+
+.pending-item{
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.pending-item strong{display:block;font-size:13px;}
+.pending-item small{color:var(--muted);}
+
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+
+.tab-btn{
+    border:1px solid var(--border);
+    background:#fff;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+
+.tab-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+.tab-count{
+    background:rgba(255,255,255,.22);
+    border-radius:999px;
+    padding:1px 7px;
+    font-size:11px;
+}
+
+.tab-btn:not(.active) .tab-count{background:var(--warn-soft);color:#B45309;}
+
+.approval-grid{display:grid;gap:12px;}
+
+.approval-card{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px;
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    align-items:flex-start;
+    background:#FCFAFF;
+}
+
+.approval-card h4{font-size:15px;margin-bottom:4px;}
+.approval-meta{display:flex;flex-wrap:wrap;gap:8px 14px;color:var(--muted);font-size:12px;margin-top:8px;}
+.approval-actions{display:flex;gap:8px;flex-shrink:0;}
+
+.empty{
+    text-align:center;
+    padding:36px 16px;
+    color:var(--muted);
+}
+
+.empty strong{display:block;color:var(--text);margin-bottom:4px;}
+
+.project-card{
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:10px;
+}
+
+.project-card strong{display:block;margin-bottom:4px;}
+.project-card p{color:var(--muted);font-size:13px;}
+
+.toast{
+    position:fixed;
+    right:24px;
+    bottom:24px;
+    background:var(--text);
+    color:#fff;
+    padding:12px 16px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:600;
+    z-index:800;
+    opacity:0;
+    transform:translateY(8px);
+    pointer-events:none;
+    transition:opacity .2s ease,transform .2s ease;
+}
+
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.ok{background:#065F46;}
+.toast.err{background:#991B1B;}
+
+.overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(30,27,75,.4);
+    z-index:150;
+}
+
+.overlay.show{display:block;}
+
+.action-row{display:flex;gap:6px;flex-wrap:nowrap;}
+
+@media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+}
+
+@media (max-width:1100px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .dashboard-grid{grid-template-columns:1fr;}
+}
+
+@media (max-width:900px){
+    .sidebar{transform:translateX(-100%);}
+    .sidebar.open{transform:translateX(0);}
+    .main{margin-left:0;}
+    .menu-toggle{display:flex;}
+    .approval-card{flex-direction:column;}
+}
+
+@media (max-width:600px){
+    .content{padding:14px;}
+    .topbar{padding:0 14px;}
+    .stats{grid-template-columns:1fr;}
+    .form-grid,.quick-actions{grid-template-columns:1fr;}
+    .form-group.full{grid-column:auto;}
+}
+
+body:not(.authed) .sidebar,
+body:not(.authed) .main,
+body:not(.authed) .overlay{display:none !important;}
+
+.login-screen{
+    display:none;
+    min-height:100vh;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:
+        radial-gradient(circle at 10% 20%, #C7D2FE 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, #A7F3D0 0%, transparent 36%),
+        var(--bg);
+}
+
+body:not(.authed) .login-screen{display:flex;}
+
+.login-card{
+    width:420px;
+    max-width:100%;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:32px 28px;
+    box-shadow:var(--shadow);
+}
+
+.login-card h1{font-size:24px;margin:12px 0 6px;}
+.login-card p{color:var(--muted);font-size:13px;margin-bottom:22px;}
+.login-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.punch-code{
+    font-family:"Fira Code",monospace;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.04em;
+    background:var(--primary-soft);
+    color:var(--primary-dark);
+    padding:3px 7px;
+    border-radius:6px;
+}
+.decoder-result{
+    margin-top:16px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    background:#FCFAFF;
+    display:none;
+}
+.decoder-result.show{display:block;}
+.decoder-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px 16px;
+    margin-top:12px;
+}
+.decoder-grid div{font-size:13px;}
+.decoder-grid span{display:block;color:var(--muted);font-size:11px;font-weight:700;}
+.code-input{font-family:"Fira Code",monospace;letter-spacing:.12em;text-transform:uppercase;}
+
+.role-tabs{display:flex;gap:8px;margin-bottom:18px;}
+.role-tabs .tab-btn{flex:1;justify-content:center;}
+.login-hint{margin-top:16px;margin-bottom:0;font-size:12px;line-height:1.5;}
+.login-error{display:none;margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--danger-soft);color:#B91C1C;font-size:12px;font-weight:600;}
+.login-error.show{display:block;}
+
+body.btn-pill{
+    --btn-radius:999px;
+    --radius:18px;
+}
+body.btn-pill .quick-action,
+body.btn-pill .tab-btn,
+body.btn-pill .menu button,
+body.btn-pill .badge,
+body.btn-pill input,
+body.btn-pill select,
+body.btn-pill textarea{border-radius:999px;}
+
+body.btn-square{
+    --btn-radius:4px;
+    --radius:6px;
+}
+body.btn-square .quick-action,
+body.btn-square .tab-btn,
+body.btn-square .menu button,
+body.btn-square .badge,
+body.btn-square input,
+body.btn-square select,
+body.btn-square textarea,
+body.btn-square .stat-card,
+body.btn-square .panel,
+body.btn-square .modal-box,
+body.btn-square .login-card{border-radius:6px;}
+
+.theme-presets,.btn-style-options{display:flex;gap:8px;flex-wrap:wrap;}
+.theme-swatch{
+    width:42px;height:42px;
+    border-radius:12px;
+    border:2px solid transparent;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);
+    position:relative;
+}
+.theme-swatch.active{border-color:var(--text);}
+.btn-style-opt{
+    flex:1;
+    min-width:110px;
+    border:1px solid var(--border);
+    background:#fff;
+    padding:12px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text);
+}
+.btn-style-opt.active{border-color:var(--primary);background:var(--primary-soft);color:var(--primary-dark);}
+.color-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
+.color-field{display:flex;flex-direction:column;gap:6px;}
+.color-field input[type="color"]{
+    width:100%;
+    height:42px;
+    padding:4px;
+    cursor:pointer;
+}
+.theme-lock{
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:10px;
+    background:var(--warn-soft);
+    color:#B45309;
+    font-size:12px;
+    font-weight:600;
+    display:none;
+}
+.theme-lock.show{display:block;}
+
+.sheet-setup{
+    display:none;
+    background:#FFF7ED;
+    border:1px solid #FDBA74;
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:18px;
+}
+
+.sheet-setup.show{display:block;}
+
+.sheet-setup h3{font-size:15px;margin-bottom:4px;}
+.sheet-setup p{color:#9A3412;font-size:12px;margin-bottom:12px;}
+.sheet-setup .form-grid{margin-bottom:12px;}
+
+.sheet-status.warn{
+    background:var(--warn-soft);
+    color:#B45309;
+}
+
+.login-sheet-setup{
+    margin-top:18px;
+    text-align:left;
+}
+
+[data-roles]{ }
+body.role-employee .only-staff,
+body.role-owner .only-admin,
+body.role-employee .only-admin{display:none !important;}
+.only-employee{display:none !important;}
+body.role-employee .only-employee{display:block !important;}
+body.role-employee button.only-employee,
+body.role-employee .quick-action.only-employee{display:block !important;}
+body.role-employee .punch-row.only-employee{display:flex !important;}
+body.role-employee .btn.only-employee{display:inline-flex !important;}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+    <div class="login-card">
+        <div class="logo-mark" style="background:var(--primary);color:#fff;">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+        <h1>Tapped HR</h1>
+        <p>Sign in as employee, owner, or admin.</p>
+        <div class="role-tabs" id="loginRoleTabs">
+            <button type="button" class="tab-btn active" onclick="setLoginRole('employee', this)">Employee</button>
+            <button type="button" class="tab-btn" onclick="setLoginRole('owner', this)">Owner</button>
+            <button type="button" class="tab-btn" onclick="setLoginRole('admin', this)">Admin</button>
+        </div>
+        <div class="form-grid" style="grid-template-columns:1fr;">
+            <div class="form-group">
+                <label>Username</label>
+                <input id="loginUser" placeholder="employee" autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
+            </div>
+        </div>
+        <div class="login-error" id="loginError"></div>
+        <div class="login-actions">
+            <button class="btn btn-primary" id="loginBtn" onclick="loginUser()">Login as Employee</button>
+        </div>
+        <p class="login-hint" id="loginHint">Demo: employee / emp123 · You can only edit your own profile and apply regularize.</p>
+        <div class="sheet-setup login-sheet-setup" id="loginSheetSetup">
+            <h3>Add Google Sheet links</h3>
+            <p>Sheet URLs are not set in the code. Paste all 3 below, or add them in <code>BUILT_IN_SHEETS</code>.</p>
+            <div class="form-grid" style="grid-template-columns:1fr;">
+                <div class="form-group">
+                    <label>Employee sheet URL or ID</label>
+                    <input id="loginEmployeeSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+                </div>
+                <div class="form-group">
+                    <label>Attendance sheet URL or ID</label>
+                    <input id="loginAttendanceSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+                </div>
+                <div class="form-group">
+                    <label>Login users sheet URL or ID</label>
+                    <input id="loginUsersSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="saveSheetLinks('login')">Save sheet links</button>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" id="navOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="logo">
+        <div class="logo-mark">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+        Tapped <span>HR</span>
+    </div>
+
+    <ul class="menu">
+        <li>
+            <button class="active" onclick="showPage('dashboard',this)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg>
+                Dashboard
+            </button>
+        </li>
+        <li>
+            <button onclick="showPage('employees',this)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span id="navEmployeesLabel">Employees</span>
+            </button>
+        </li>
+        <li>
+            <button onclick="showPage('attendance',this)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                Attendance
+            </button>
+        </li>
+        <li class="only-staff">
+            <button onclick="showPage('approvals',this)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                Approvals
+                <span class="nav-badge" id="approvalBadge">0</span>
+            </button>
+        </li>
+        <li class="only-staff">
+            <button onclick="showPage('reports',this)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17V9M12 17V5M16 17v-6"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                Reports
+            </button>
+        </li>
+        <li class="only-staff">
+            <button onclick="showPage('projects',this)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h16M4 16h16M8 4v16M16 4v16"/></svg>
+                Projects
+            </button>
+        </li>
+        <li class="only-admin">
+            <button onclick="showPage('owners',this)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.2 4.5L19 8.2l-3.5 3.4.8 4.9L12 14.8 7.7 16.5l.8-4.9L5 8.2l4.8-.7z"/></svg>
+                Owners
+            </button>
+        </li>
+        <li class="only-staff">
+            <button onclick="showPage('settings',this)">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H8a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V8c.3.7 1 1.2 1.6 1.2H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1.1z"/></svg>
+                Settings
+            </button>
+        </li>
+    </ul>
+
+    <div class="sidebar-foot" id="sidebarFoot">Sign in to continue</div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+    <div class="topbar-left">
+        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Open menu">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div>
+            <div class="page-title" id="pageTitle">Dashboard</div>
+            <div class="page-sub" id="pageSub">Overview of people and attendance</div>
+        </div>
+    </div>
+    <div class="user">
+        <div class="user-meta">
+            <strong id="loggedUserName">Guest</strong>
+            <span id="loggedUserRole">Not signed in</span>
+        </div>
+        <div class="avatar" id="loggedAvatar">?</div>
+        <button class="btn btn-secondary btn-sm" onclick="logoutUser()">Logout</button>
+    </div>
+</header>
+
+<div class="content">
+
+<div class="sheet-setup" id="appSheetSetup">
+    <h3>Add Google Sheet links</h3>
+    <p id="appSheetSetupText">One or more sheet URLs are missing. Paste them here, or set them in <code>BUILT_IN_SHEETS</code> in the code.</p>
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Employee sheet URL or ID</label>
+            <input id="setupEmployeeSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+        </div>
+        <div class="form-group">
+            <label>Attendance sheet URL or ID</label>
+            <input id="setupAttendanceSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+        </div>
+        <div class="form-group">
+            <label>Login users sheet URL or ID</label>
+            <input id="setupUsersSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+        </div>
+        <div class="form-group">
+            <label>Apps Script URL (optional)</label>
+            <input id="setupScriptUrl" placeholder="https://script.google.com/macros/s/...">
+        </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveSheetLinks('app')">Save sheet links</button>
+</div>
+
+<section id="dashboard" class="page active">
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/></svg>
+            </div>
+            <div class="stat-label" id="dashStat1Label">Total Employees</div>
+            <div class="stat-value" id="totalEmployees">0</div>
+            <div class="stat-sub" id="dashStat1Sub">All people in the sheet</div>
+        </div>
+        <div class="stat-card ok">
+            <div class="stat-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div class="stat-label" id="dashStat2Label">Approved Active</div>
+            <div class="stat-value" id="activeEmployees">0</div>
+            <div class="stat-sub" id="dashStat2Sub">Can mark attendance</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </div>
+            <div class="stat-label" id="dashStat3Label">Present Today</div>
+            <div class="stat-value" id="presentToday">0</div>
+            <div class="stat-sub" id="dashStat3Sub">Today's attendance</div>
+        </div>
+        <div class="stat-card warn">
+            <div class="stat-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <div class="stat-label" id="dashStat4Label">Pending Approvals</div>
+            <div class="stat-value" id="pendingApprovals">0</div>
+            <div class="stat-sub" id="dashStat4Sub">Employees + regularize</div>
+        </div>
+    </div>
+
+    <div class="panel only-employee" id="empPunchPanel" style="margin-bottom:18px;">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Punch in / Punch out</div>
+                <small id="empPunchHint">Mark your own attendance for today</small>
+            </div>
+        </div>
+        <p class="punch-status" id="empPunchStatus">Sign in as an employee to punch.</p>
+        <div class="punch-row only-employee">
+            <button class="btn btn-primary" id="empPunchInBtn" onclick="employeePunch('in')">Punch In</button>
+            <button class="btn btn-blue" id="empPunchOutBtn" onclick="employeePunch('out')">Punch Out</button>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">Quick actions</div>
+                    <small id="quickActionsSub">Common owner tasks</small>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-action only-staff" onclick="openEmployeeModal()">
+                    <strong>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                        Add Employee
+                    </strong>
+                    <span>New hire waits for owner approval</span>
+                </button>
+                <button class="quick-action only-staff" onclick="showPageByName('attendance')">
+                    <strong>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                        Mark Attendance
+                    </strong>
+                    <span>Punch in / punch out approved staff</span>
+                </button>
+                <button class="quick-action" onclick="openRegularizeModal()">
+                    <strong>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+                        Apply Regularize
+                    </strong>
+                    <span>Send a missed punch for owner review</span>
+                </button>
+                <button class="quick-action only-staff" onclick="showPageByName('approvals')">
+                    <strong>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
+                        Review Approvals
+                    </strong>
+                    <span>Approve employees and regularize requests</span>
+                </button>
+                <button class="quick-action only-employee" id="empPunchInQuick" onclick="employeePunch('in')">
+                    <strong>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+                        Punch In
+                    </strong>
+                    <span>Start your work day</span>
+                </button>
+                <button class="quick-action only-employee" id="empPunchOutQuick" onclick="employeePunch('out')">
+                    <strong>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        Punch Out
+                    </strong>
+                    <span>End your work day</span>
+                </button>
+                <button class="quick-action only-employee" id="empProfileQuick" onclick="openOwnEmployeeModal()">
+                    <strong>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/></svg>
+                        My Profile
+                    </strong>
+                    <span>Create or edit your own employee data</span>
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <div class="panel only-staff">
+                <div class="panel-header">
+                    <div class="panel-title">Needs your approval</div>
+                </div>
+                <div class="pending-list" id="dashboardPending"></div>
+            </div>
+            <div class="panel only-staff">
+                <div class="panel-header">
+                    <div class="panel-title">Google Sheets</div>
+                </div>
+                <div class="sheet-status" id="sheetStatusBox">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+                    <div>
+                        <strong id="sheetStatusTitle">Checking sheets</strong><br>
+                        <small id="sheetStatusText">Employee, Attendance, and Login sheets</small>
+                    </div>
+                </div>
+                <br>
+                <button class="btn btn-primary" id="sheetStatusBtn" onclick="syncSheets()">Sync Google Sheets</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="employees" class="page">
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-label">Total Employees</div>
+            <div class="stat-value" id="employeeCount">0</div>
+        </div>
+        <div class="stat-card ok">
+            <div class="stat-label">Approved</div>
+            <div class="stat-value" id="employeeApproved">0</div>
+        </div>
+        <div class="stat-card warn">
+            <div class="stat-label">Pending</div>
+            <div class="stat-value" id="employeePending">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Projects</div>
+            <div class="stat-value" id="projectCount">0</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title" id="employeesPanelTitle">Employees</div>
+                <small id="employeesPanelSub">Owner must approve each person before they can mark attendance</small>
+            </div>
+            <button class="btn btn-primary only-staff" onclick="openEmployeeModal()">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                Add Employee
+            </button>
+            <button class="btn btn-primary only-employee" id="empSelfBtn" onclick="openOwnEmployeeModal()">
+                Create / Edit my profile
+            </button>
+        </div>
+
+        <div class="filters only-staff">
+            <input type="text" id="employeeSearch" placeholder="Search name, ID or mobile..." oninput="renderEmployees()">
+            <select id="teamFilter" onchange="renderEmployees()"><option value="">All Teams</option></select>
+            <select id="employeeStatusFilter" onchange="renderEmployees()">
+                <option value="">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+            <select id="employeeApprovalFilter" onchange="renderEmployees()">
+                <option value="">All Approvals</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+            </select>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Date Joining</th>
+                        <th>Role</th>
+                        <th>Team</th>
+                        <th>Team Leader</th>
+                        <th>Gender</th>
+                        <th>Company</th>
+                        <th>Project</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>Status</th>
+                        <th>is_approved</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="attendance" class="page">
+    <div class="stats">
+        <div class="stat-card ok">
+            <div class="stat-label">Present Today</div>
+            <div class="stat-value" id="attendancePresent">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Working Hours</div>
+            <div class="stat-value" id="totalHours">0h</div>
+        </div>
+        <div class="stat-card warn">
+            <div class="stat-label">Late Arrivals</div>
+            <div class="stat-value" id="lateCount">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Regularize Pending</div>
+            <div class="stat-value" id="regularizedCount">0</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Attendance</div>
+                <small>Regularize requests stay pending until the owner approves them</small>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-secondary" onclick="openRegularizeModal()">Apply Regularize</button>
+                <button class="btn btn-primary only-staff" onclick="openAttendanceModal()">Mark Attendance</button>
+            </div>
+        </div>
+
+        <div class="filters">
+            <input type="date" id="attendanceDate" onchange="renderAttendance()">
+            <input type="text" id="attendanceSearch" placeholder="Search employee..." oninput="renderAttendance()">
+            <select id="attendanceTeamFilter" onchange="renderAttendance()"><option value="">All Teams</option></select>
+            <select id="attendanceShiftFilter" onchange="renderAttendance()">
+                <option value="">All Shifts</option>
+                <option value="Day Shift">Day Shift</option>
+                <option value="Night Shift">Night Shift</option>
+                <option value="General Shift">General Shift</option>
+            </select>
+            <select id="attendanceStatusFilter" onchange="renderAttendance()">
+                <option value="">All Status</option>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Half Day">Half Day</option>
+                <option value="Leave">Leave</option>
+            </select>
+            <select id="attendanceApprovalFilter" onchange="renderAttendance()">
+                <option value="">All Approvals</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+                <option value="N/A">N/A</option>
+            </select>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Punch In</th>
+                        <th>Punch Out</th>
+                        <th>Working Hours</th>
+                        <th>Shift</th>
+                        <th>Project</th>
+                        <th>Company</th>
+                        <th>Location In</th>
+                        <th>Location Out</th>
+                        <th>Status</th>
+                        <th>Regularized</th>
+                        <th>is_approved</th>
+                        <th>Code In</th>
+                        <th>Code Out</th>
+                        <th>Remark</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="approvals" class="page">
+    <div class="stats">
+        <div class="stat-card warn">
+            <div class="stat-label">Employee requests</div>
+            <div class="stat-value" id="pendingEmpCount">0</div>
+            <div class="stat-sub">Waiting for owner</div>
+        </div>
+        <div class="stat-card warn">
+            <div class="stat-label">Regularize requests</div>
+            <div class="stat-value" id="pendingRegCount">0</div>
+            <div class="stat-sub">Attendance sheet</div>
+        </div>
+        <div class="stat-card ok">
+            <div class="stat-label">Approved employees</div>
+            <div class="stat-value" id="approvedEmpCount">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Approved regularize</div>
+            <div class="stat-value" id="approvedRegCount">0</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Owner approvals</div>
+                <small>Review new employees and regularize applications</small>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tabEmp" onclick="switchApprovalTab('employees')">
+                Employees <span class="tab-count" id="tabEmpCount">0</span>
+            </button>
+            <button class="tab-btn" id="tabReg" onclick="switchApprovalTab('regularize')">
+                Regularize <span class="tab-count" id="tabRegCount">0</span>
+            </button>
+        </div>
+
+        <div id="approvalEmployees" class="approval-grid"></div>
+        <div id="approvalRegularize" class="approval-grid" style="display:none;"></div>
+    </div>
+</section>
+
+<section id="reports" class="page">
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Punch code decoder</div>
+                <small>Paste the 15-digit code to read employee, location, time, and punch type</small>
+            </div>
+        </div>
+        <div class="filters">
+            <input class="code-input" id="decodeCode" maxlength="15" placeholder="001ROH11763109I" style="min-width:260px;">
+            <button class="btn btn-primary" onclick="decodeAttendanceCode()">Decode</button>
+        </div>
+        <div class="decoder-result" id="decodeResult"></div>
+    </div>
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Attendance Reports</div>
+                <small>Exports include is_approved, location, and punch codes</small>
+            </div>
+        </div>
+        <div class="quick-actions">
+            <button class="btn btn-primary" onclick="exportEmployees()">Export Employees CSV</button>
+            <button class="btn btn-primary" onclick="exportAttendance()">Export Attendance CSV</button>
+            <button class="btn btn-secondary" onclick="exportUsers()">Export Login Sheet CSV</button>
+        </div>
+    </div>
+</section>
+
+<section id="projects" class="page">
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Projects</div>
+                <small>Projects currently assigned to employees</small>
+            </div>
+        </div>
+        <div id="projectsList"></div>
+    </div>
+</section>
+
+<section id="owners" class="page">
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Add owner</div>
+                <small>Only admin can create owner login users. Owners cannot create other owners.</small>
+            </div>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Username *</label>
+                <input id="newOwnerName" placeholder="owner2">
+            </div>
+            <div class="form-group">
+                <label>Password *</label>
+                <input id="newOwnerPass" type="password" placeholder="Password">
+            </div>
+            <div class="form-group">
+                <label>Mobile *</label>
+                <input id="newOwnerMobile" maxlength="10" placeholder="9876543210">
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input id="newOwnerEmail" type="email" placeholder="owner@company.com">
+            </div>
+        </div>
+        <br>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="addOwnerUser()">Add owner user</button>
+            <button class="btn btn-secondary" onclick="exportOwners()">Export owner sheet</button>
+        </div>
+        <div class="table-wrapper" style="margin-top:16px;">
+            <table style="min-width:720px;">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Password</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>Theme</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ownersTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="settings" class="page">
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Workspace appearance</div>
+                <small>Saved on this login user. Owner can save once a month. Admin can change anytime.</small>
+            </div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+            <label>Preset</label>
+            <div class="theme-presets" id="themePresets"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+            <label>Button style</label>
+            <div class="btn-style-options">
+                <button type="button" class="btn-style-opt" data-style="rounded" onclick="setButtonStyle('rounded')">Rounded</button>
+                <button type="button" class="btn-style-opt" data-style="pill" onclick="setButtonStyle('pill')">Pill</button>
+                <button type="button" class="btn-style-opt" data-style="square" onclick="setButtonStyle('square')">Square</button>
+            </div>
+        </div>
+        <div class="color-row">
+            <div class="color-field">
+                <label>Button color</label>
+                <input type="color" id="themeButton" oninput="previewThemeFromInputs()">
+            </div>
+            <div class="color-field">
+                <label>Header color</label>
+                <input type="color" id="themeHeader" oninput="previewThemeFromInputs()">
+            </div>
+            <div class="color-field">
+                <label>Background color</label>
+                <input type="color" id="themeBg" oninput="previewThemeFromInputs()">
+            </div>
+            <div class="color-field">
+                <label>Text color</label>
+                <input type="color" id="themeText" oninput="previewThemeFromInputs()">
+            </div>
+            <div class="color-field">
+                <label>Sidebar color</label>
+                <input type="color" id="themeSidebar" oninput="previewThemeFromInputs()">
+            </div>
+        </div>
+        <div class="theme-lock" id="themeLock">Owner can change appearance only once this month. Try again next month, or ask an admin.</div>
+        <br>
+        <button class="btn btn-primary" id="saveThemeBtn" onclick="saveCurrentTheme()">Save appearance</button>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Google Sheets Settings</div>
+                <small>Employee sheet uses your columns: id, name, mobile, joining, role, team, leader, gender, company, project, type, status, email, emergency, address, remarks, latitude, longitude, is_approved</small>
+            </div>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Employee Google Sheet URL or ID</label>
+                <input id="employeeSheetId" placeholder="Paste sheet URL or ID">
+            </div>
+            <div class="form-group">
+                <label>Attendance Google Sheet URL or ID</label>
+                <input id="attendanceSheetId" placeholder="Paste sheet URL or ID">
+            </div>
+            <div class="form-group">
+                <label>Login Users Google Sheet URL or ID</label>
+                <input id="usersSheetId" placeholder="Paste sheet URL or ID">
+            </div>
+            <div class="form-group">
+                <label>Owner WhatsApp number</label>
+                <input id="ownerWhatsapp" placeholder="919876543210 or 9876543210">
+            </div>
+            <div class="form-group full">
+                <label>Google Apps Script API URL</label>
+                <input id="appsScriptUrl" placeholder="https://script.google.com/macros/s/...">
+            </div>
+        </div>
+        <br>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+            Employee sheet headers: <strong>id</strong>, <strong>name</strong>, <strong>mobile</strong>, <strong>joining</strong>, <strong>role</strong>, <strong>team</strong>, <strong>leader</strong>, <strong>gender</strong>, <strong>company</strong>, <strong>project</strong>, <strong>type</strong>, <strong>status</strong>, <strong>email</strong>, <strong>emergency</strong>, <strong>address</strong>, <strong>remarks</strong>, <strong>latitude</strong>, <strong>longitude</strong>, <strong>is_approved</strong>.<br>
+            Attendance sheet: <strong>is_approved</strong>, <strong>punchCodeIn</strong>, <strong>punchCodeOut</strong>.<br>
+            Login sheet: <strong>username</strong>, <strong>password</strong>, <strong>mobile</strong>, <strong>email</strong>, <strong>role</strong>, <strong>employeeId</strong>, plus theme color columns.<br>
+            Share sheets as <strong>Anyone with the link can view</strong>, then Sync. Sync loads employees and login users from Google Sheets.<br>
+            Employee can only edit own data and apply regularize. Owner can do everything except create owners. Admin can create owners.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            <button class="btn btn-primary" onclick="syncSheets()">Sync employees + login sheet</button>
+            <button class="btn btn-secondary" onclick="testWhatsApp()">Send test WhatsApp</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">Login users</div>
+                <small id="usersPanelSub">Add employee or admin logins. Owner cannot create an owner.</small>
+            </div>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Username *</label>
+                <input id="newUserName" placeholder="priya">
+            </div>
+            <div class="form-group">
+                <label>Password *</label>
+                <input id="newUserPass" type="password" placeholder="Password">
+            </div>
+            <div class="form-group">
+                <label>Mobile *</label>
+                <input id="newUserMobile" maxlength="10" placeholder="9876543210">
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input id="newUserEmail" type="email" placeholder="user@company.com">
+            </div>
+            <div class="form-group">
+                <label>Role *</label>
+                <select id="newUserRole">
+                    <option value="employee">Employee</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="form-group" id="newUserEmpWrap">
+                <label>Linked employee ID</label>
+                <input id="newUserEmpId" placeholder="EMP001 (employee role)">
+            </div>
+        </div>
+        <br>
+        <button class="btn btn-primary" onclick="addLoginUser()">Add user</button>
+        <div class="table-wrapper" style="margin-top:16px;">
+            <table style="min-width:860px;">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Password</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Linked ID</th>
+                        <th>Theme</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+</div>
+</main>
+
+<div class="modal" id="employeeModal">
+<div class="modal-box">
+    <div class="modal-header">
+        <div class="modal-title" id="employeeModalTitle">Add Employee</div>
+        <button class="close" onclick="closeModal('employeeModal')" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+        <form id="employeeForm">
+        <input type="hidden" id="editEmployeeIndex">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Employee ID *</label>
+                <input id="empId" required placeholder="EMP001">
+            </div>
+            <div class="form-group">
+                <label>Employee Name *</label>
+                <input id="empName" required placeholder="Employee name">
+            </div>
+            <div class="form-group">
+                <label>Mobile Number *</label>
+                <input id="empMobile" required maxlength="10" placeholder="9876543210">
+            </div>
+            <div class="form-group">
+                <label>Date of Joining *</label>
+                <input type="date" id="empJoining" required>
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <input id="empRole" placeholder="Developer / Engineer / Worker">
+            </div>
+            <div class="form-group">
+                <label>Team</label>
+                <input id="empTeam" placeholder="Development">
+            </div>
+            <div class="form-group">
+                <label>Team Leader</label>
+                <input id="empLeader" placeholder="Team leader">
+            </div>
+            <div class="form-group">
+                <label>Gender</label>
+                <select id="empGender">
+                    <option value="">Select</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Company</label>
+                <input id="empCompany" placeholder="Company name">
+            </div>
+            <div class="form-group">
+                <label>Project</label>
+                <input id="empProject" placeholder="Project name">
+            </div>
+            <div class="form-group">
+                <label>Employment Type</label>
+                <select id="empType">
+                    <option>Full Time</option>
+                    <option>Part Time</option>
+                    <option>Contract</option>
+                    <option>Temporary</option>
+                    <option>Intern</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="empStatus">
+                    <option>Active</option>
+                    <option>Inactive</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Personal Email</label>
+                <input type="email" id="empEmail">
+            </div>
+            <div class="form-group">
+                <label>Emergency Contact</label>
+                <input id="empEmergency">
+            </div>
+            <div class="form-group">
+                <label>Location latitude *</label>
+                <input id="empLat" placeholder="11.0168">
+            </div>
+            <div class="form-group">
+                <label>Location longitude *</label>
+                <input id="empLng" placeholder="76.9558">
+            </div>
+            <div class="form-group full">
+                <label>Address</label>
+                <input id="empAddress">
+            </div>
+            <div class="form-group full">
+                <label>Remarks</label>
+                <input id="empRemarks">
+            </div>
+        </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('employeeModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEmployee()">Save Employee</button>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="attendanceModal">
+<div class="modal-box">
+    <div class="modal-header">
+        <div class="modal-title">Mark Attendance</div>
+        <button class="close" onclick="closeModal('attendanceModal')" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Date *</label>
+                <input type="date" id="attDate">
+            </div>
+            <div class="form-group">
+                <label>Employee *</label>
+                <select id="attEmployee" onchange="loadEmployeeAttendanceData()"></select>
+            </div>
+            <div class="form-group">
+                <label>Punch In</label>
+                <input type="time" id="attPunchIn">
+            </div>
+            <div class="form-group">
+                <label>Punch Out</label>
+                <input type="time" id="attPunchOut">
+            </div>
+            <div class="form-group">
+                <label>Shift</label>
+                <select id="attShift">
+                    <option>Day Shift</option>
+                    <option>Night Shift</option>
+                    <option>General Shift</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="attStatus">
+                    <option>Present</option>
+                    <option>Absent</option>
+                    <option>Half Day</option>
+                    <option>Leave</option>
+                    <option>Holiday</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Punch In Latitude</label>
+                <input id="attLatIn" placeholder="11.0168">
+            </div>
+            <div class="form-group">
+                <label>Punch In Longitude</label>
+                <input id="attLongIn" placeholder="76.9558">
+            </div>
+            <div class="form-group">
+                <label>Punch Out Latitude</label>
+                <input id="attLatOut">
+            </div>
+            <div class="form-group">
+                <label>Punch Out Longitude</label>
+                <input id="attLongOut">
+            </div>
+            <div class="form-group">
+                <label>Project</label>
+                <input id="attProject">
+            </div>
+            <div class="form-group">
+                <label>Company</label>
+                <input id="attCompany">
+            </div>
+            <div class="form-group">
+                <label>Overtime Hours</label>
+                <input type="number" step="0.5" id="attOvertime" value="0">
+            </div>
+            <div class="form-group">
+                <label>Regularized?</label>
+                <select id="attRegularized">
+                    <option>No</option>
+                    <option>Yes</option>
+                </select>
+            </div>
+            <div class="form-group full">
+                <label>Remark</label>
+                <input id="attRemark" placeholder="Late arrival / overtime / site work...">
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('attendanceModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveAttendance()">Save Attendance</button>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="regularizeModal">
+<div class="modal-box" style="width:560px;">
+    <div class="modal-header">
+        <div class="modal-title">Apply Regularize</div>
+        <button class="close" onclick="closeModal('regularizeModal')" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+            This request is sent to the owner. Attendance stays pending until it is approved.
+        </p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Date *</label>
+                <input type="date" id="regDate">
+            </div>
+            <div class="form-group">
+                <label>Employee *</label>
+                <select id="regEmployee"></select>
+            </div>
+            <div class="form-group">
+                <label>Correct Punch In</label>
+                <input type="time" id="regPunchIn">
+            </div>
+            <div class="form-group">
+                <label>Correct Punch Out</label>
+                <input type="time" id="regPunchOut">
+            </div>
+            <div class="form-group full">
+                <label>Reason *</label>
+                <textarea id="regReason" placeholder="Forgot to punch out / network issue / on-site visit..."></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('regularizeModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitRegularize()">Submit for approval</button>
+    </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let employees = JSON.parse(localStorage.getItem("employees")) || [];
+let attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+let currentAdmin = null;
+let approvalTab = "employees";
+let loginRole = "employee";
+let draftButtonStyle = "rounded";
+
+const DEFAULT_THEME = {
+    preset: "indigo",
+    buttonColor: "#6366F1",
+    headerColor: "#FFFFFF",
+    bgColor: "#F5F3FF",
+    textColor: "#1E1B4B",
+    sidebarColor: "#1E1B4B",
+    buttonStyle: "rounded"
+};
+
+const THEME_PRESETS = {
+    indigo: {preset:"indigo", buttonColor:"#6366F1", headerColor:"#FFFFFF", bgColor:"#F5F3FF", textColor:"#1E1B4B", sidebarColor:"#1E1B4B", buttonStyle:"rounded"},
+    emerald: {preset:"emerald", buttonColor:"#059669", headerColor:"#ECFDF5", bgColor:"#ECFDF5", textColor:"#064E3B", sidebarColor:"#064E3B", buttonStyle:"rounded"},
+    ocean: {preset:"ocean", buttonColor:"#0284C7", headerColor:"#FFFFFF", bgColor:"#F0F9FF", textColor:"#0C4A6E", sidebarColor:"#0C4A6E", buttonStyle:"rounded"},
+    sunset: {preset:"sunset", buttonColor:"#EA580C", headerColor:"#FFF7ED", bgColor:"#FFF7ED", textColor:"#7C2D12", sidebarColor:"#7C2D12", buttonStyle:"rounded"},
+    slate: {preset:"slate", buttonColor:"#334155", headerColor:"#F8FAFC", bgColor:"#F8FAFC", textColor:"#0F172A", sidebarColor:"#0F172A", buttonStyle:"square"}
+};
+
+const LOGIN_HINTS = {
+    employee: "Demo: employee / emp123 · You see only your data. Punch in and punch out from the dashboard.",
+    owner: "Demo: owner / owner123 · Full access except creating another owner. Appearance once a month.",
+    admin: "Demo: admin / admin123 · Full access, including creating owners. Appearance anytime."
+};
+
+const USER_SHEET_HEADERS = ["username","password","mobile","email","role","employeeId","buttonColor","headerColor","bgColor","textColor","sidebarColor","buttonStyle","themePreset","themeEditedAt"];
+
+/* Paste full Google Sheet URLs or IDs here. If any of the 3 are empty,
+   the app shows an Add sheet links form in the UI. */
+const BUILT_IN_SHEETS = {
+    employeeSheetId: "https://docs.google.com/spreadsheets/d/110ClPWHgL73hlk87uJyAoLUv3qlDJ_x_pE5fxNBvdq4/edit?gid=0#gid=0",
+    attendanceSheetId: "https://docs.google.com/spreadsheets/d/14Oj3Mcsvq-hqdHTi5oKgr-EyfhR7meJXohG0BDGV9sk/edit?gid=360815071#gid=360815071",
+    usersSheetId: "https://docs.google.com/spreadsheets/d/1-VAqILVkSmEobrbcHpIV6ZXOYKRyT_jCgFaGR3rKVJ8/edit?gid=1485390356#gid=1485390356",
+    appsScriptUrl: ""
+};
+
+function extractSheetId(value){
+    const raw = String(value || "").trim();
+    if(!raw) return "";
+    const fromUrl = raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if(fromUrl) return fromUrl[1];
+    if(/^https?:\/\//i.test(raw)){
+        const parts = raw.replace(/[?#].*$/, "").split("/").filter(Boolean);
+        return parts[parts.length - 1] || "";
+    }
+    return raw;
+}
+
+function extractGid(value){
+    const m = String(value || "").match(/[?&#]gid=([0-9]+)/i);
+    return m ? m[1] : "";
+}
+
+function normalizeHex(value, fallback){
+    let v = String(value || "").trim();
+    if(!v) return fallback;
+    if(v[0] !== "#") v = "#" + v;
+    if(/^#[0-9A-Fa-f]{6}$/.test(v)) return "#" + v.slice(1).toUpperCase();
+    if(/^#[0-9A-Fa-f]{3}$/.test(v)){
+        return ("#" + v[1] + v[1] + v[2] + v[2] + v[3] + v[3]).toUpperCase();
+    }
+    return fallback;
+}
+
+function cloneTheme(theme){
+    const src = theme || {};
+    return {
+        preset: src.preset || src.themePreset || DEFAULT_THEME.preset,
+        buttonColor: normalizeHex(src.buttonColor || src.primary || src.cta, DEFAULT_THEME.buttonColor),
+        headerColor: normalizeHex(src.headerColor || src.header, DEFAULT_THEME.headerColor),
+        bgColor: normalizeHex(src.bgColor || src.bg, DEFAULT_THEME.bgColor),
+        textColor: normalizeHex(src.textColor || src.text, DEFAULT_THEME.textColor),
+        sidebarColor: normalizeHex(src.sidebarColor || src.sidebar, DEFAULT_THEME.sidebarColor),
+        buttonStyle: ["rounded","pill","square"].includes(src.buttonStyle) ? src.buttonStyle : DEFAULT_THEME.buttonStyle
+    };
+}
+
+if(employees.length === 0){
+    employees = [
+        {
+            id:"EMP001", name:"Rohit Sharma", mobile:"9876543210", joining:"2024-01-15",
+            role:"Team Leader", team:"Development", leader:"Rohit Sharma", gender:"Male",
+            company:"ABC Corp", project:"Project Alpha", type:"Full Time", status:"Active",
+            email:"rohit@abccorp.com", emergency:"", address:"", remarks:"", is_approved:"Approved",
+            latitude:"11.0168", longitude:"76.9558"
+        },
+        {
+            id:"EMP002", name:"Priya Singh", mobile:"9876543211", joining:"2024-02-20",
+            role:"Developer", team:"Development", leader:"Rohit Sharma", gender:"Female",
+            company:"ABC Corp", project:"Project Alpha", type:"Full Time", status:"Active",
+            email:"priya@abccorp.com", emergency:"", address:"", remarks:"", is_approved:"Approved",
+            latitude:"11.0184", longitude:"76.9720"
+        },
+        {
+            id:"EMP003", name:"Amit Kumar", mobile:"9876543212", joining:"2024-03-05",
+            role:"Designer", team:"Design", leader:"Neha Verma", gender:"Male",
+            company:"ABC Corp", project:"Project Beta", type:"Full Time", status:"Active",
+            email:"amit@abccorp.com", emergency:"", address:"", remarks:"", is_approved:"Approved",
+            latitude:"13.0827", longitude:"80.2707"
+        },
+        {
+            id:"EMP004", name:"Sneha Patel", mobile:"9876543213", joining:"2024-08-12",
+            role:"QA Engineer", team:"Quality", leader:"Rohit Sharma", gender:"Female",
+            company:"ABC Corp", project:"Project Alpha", type:"Full Time", status:"Active",
+            email:"sneha@abccorp.com", emergency:"", address:"", remarks:"Awaiting owner approval",
+            is_approved:"Pending",
+            latitude:"12.9716", longitude:"77.5946"
+        }
+    ];
+    saveEmployees();
+}
+
+if(attendance.length === 0){
+    const today = new Date().toISOString().split("T")[0];
+    attendance = [
+        {
+            date:today, employeeId:"EMP001", name:"Rohit Sharma", punchIn:"09:05", punchOut:"18:10",
+            workingHours:"9h 05m", shift:"Day Shift", latIn:"11.0168", longIn:"76.9558",
+            latOut:"11.0168", longOut:"76.9558", project:"Project Alpha", company:"ABC Corp",
+            overtime:"0", regularized:"No", status:"Present", remark:"", is_approved:"N/A"
+        },
+        {
+            date:today, employeeId:"EMP002", name:"Priya Singh", punchIn:"09:42", punchOut:"18:00",
+            workingHours:"8h 18m", shift:"Day Shift", latIn:"", longIn:"", latOut:"", longOut:"",
+            project:"Project Alpha", company:"ABC Corp", overtime:"0", regularized:"Yes",
+            status:"Present", remark:"Forgot to punch in on time", is_approved:"Pending"
+        }
+    ];
+    saveAttendanceData();
+}
+
+if(users.length === 0){
+    users = [
+        {
+            username:"admin",
+            password:"admin123",
+            mobile:"9876543200",
+            email:"admin@tapped.com",
+            role:"admin",
+            employeeId:"",
+            theme: cloneTheme(THEME_PRESETS.indigo),
+            themeEditedAt:""
+        },
+        {
+            username:"owner",
+            password:"owner123",
+            mobile:"9876543299",
+            email:"owner@tapped.com",
+            role:"owner",
+            employeeId:"",
+            theme: cloneTheme(THEME_PRESETS.emerald),
+            themeEditedAt:""
+        },
+        {
+            username:"employee",
+            password:"emp123",
+            mobile:"9876543210",
+            email:"rohit@abccorp.com",
+            role:"employee",
+            employeeId:"EMP001",
+            theme: cloneTheme(THEME_PRESETS.ocean),
+            themeEditedAt:""
+        }
+    ];
+    saveUsers();
+}
+
+migrateData();
+ensureDefaultUsers();
+
+function normalizeApproval(value, fallback){
+    if(value === true || value === "true" || value === "Yes" || value === "Approved") return "Approved";
+    if(value === false || value === "false" || value === "No" || value === "Rejected") return "Rejected";
+    if(value === "Pending" || value === "N/A") return value;
+    return fallback;
+}
+
+function migrateData(){
+    let changed = false;
+
+    employees.forEach(e=>{
+        const next = normalizeApproval(e.is_approved, "Approved");
+        if(e.is_approved !== next){
+            e.is_approved = next;
+            changed = true;
+        }
+        if(e.latitude == null){ e.latitude = ""; changed = true; }
+        if(e.longitude == null){ e.longitude = ""; changed = true; }
+    });
+
+    attendance.forEach(a=>{
+        let next;
+        if(a.regularized === "Yes"){
+            next = normalizeApproval(a.is_approved, "Pending");
+            if(next === "N/A") next = "Pending";
+        }else{
+            next = (a.is_approved === "Approved" || a.is_approved === "Rejected" || a.is_approved === "Pending")
+                ? a.is_approved
+                : "N/A";
+        }
+        if(a.is_approved !== next){
+            a.is_approved = next;
+            changed = true;
+        }
+        const emp = employees.find(e=>e.id === a.employeeId);
+        if(emp){
+            if(!a.punchCodeIn && a.punchIn){
+                a.punchCodeIn = generatePunchCode(emp, a.date, a.punchIn, "I");
+                changed = true;
+            }
+            if(!a.punchCodeOut && a.punchOut){
+                a.punchCodeOut = generatePunchCode(emp, a.date, a.punchOut, "O");
+                changed = true;
+            }
+        }
+    });
+
+    if(changed){
+        saveEmployees();
+        saveAttendanceData();
+    }
+
+    users.forEach(u=>{
+        if(!u.role){ u.role = u.username === "admin" ? "admin" : "employee"; changed = true; }
+        const nextTheme = cloneTheme(u.theme);
+        if(JSON.stringify(u.theme) !== JSON.stringify(nextTheme)){
+            u.theme = nextTheme;
+            changed = true;
+        }
+        if(u.themeEditedAt == null){ u.themeEditedAt = ""; changed = true; }
+        if(u.employeeId == null){ u.employeeId = ""; changed = true; }
+    });
+    if(changed) saveUsers();
+}
+
+function ensureDefaultUsers(){
+    const defaults = [
+        {username:"admin", password:"admin123", mobile:"9876543200", email:"admin@tapped.com", role:"admin", employeeId:""},
+        {username:"owner", password:"owner123", mobile:"9876543299", email:"owner@tapped.com", role:"owner", employeeId:""},
+        {username:"employee", password:"emp123", mobile:"9876543210", email:"rohit@abccorp.com", role:"employee", employeeId:"EMP001"}
+    ];
+    let added = false;
+    defaults.forEach(d=>{
+        if(!users.some(u=>u.username.toLowerCase() === d.username.toLowerCase())){
+            users.push(Object.assign({theme: cloneTheme(DEFAULT_THEME), themeEditedAt:""}, d));
+            added = true;
+        }
+    });
+    if(added) saveUsers();
+}
+
+function saveEmployees(){
+    localStorage.setItem("employees", JSON.stringify(employees));
+}
+
+function saveAttendanceData(){
+    localStorage.setItem("attendance", JSON.stringify(attendance));
+}
+
+function saveUsers(){
+    localStorage.setItem("users", JSON.stringify(users));
+}
+
+function persistCurrentUser(){
+    if(!currentUser) return;
+    sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+    currentAdmin = currentUser;
+}
+
+function currentRole(){
+    return (currentUser && currentUser.role) || "";
+}
+
+function isAdmin(){ return currentRole() === "admin"; }
+function isOwner(){ return currentRole() === "owner"; }
+function isEmployee(){ return currentRole() === "employee"; }
+function isStaff(){ return isAdmin() || isOwner(); }
+
+function monthKey(){
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+}
+
+function canEditTheme(){
+    if(isAdmin()) return true;
+    if(isOwner()) return currentUser.themeEditedAt !== monthKey();
+    return false;
+}
+
+function myEmployee(){
+    if(!currentUser) return null;
+    if(currentUser.employeeId){
+        const linked = employees.find(e=>String(e.id).toLowerCase() === String(currentUser.employeeId).toLowerCase());
+        if(linked) return linked;
+    }
+    if(currentUser.mobile){
+        const byMobile = employees.find(e=>e.mobile === currentUser.mobile);
+        if(byMobile) return byMobile;
+    }
+    if(currentUser.email){
+        const byEmail = employees.find(e=>(e.email || "").toLowerCase() === currentUser.email.toLowerCase());
+        if(byEmail) return byEmail;
+    }
+    const uname = String(currentUser.username || "").toLowerCase();
+    return employees.find(e=>
+        String(e.id).toLowerCase() === uname ||
+        String(e.name || "").toLowerCase() === uname
+    ) || null;
+}
+
+function visibleEmployees(){
+    if(isEmployee()){
+        const mine = myEmployee();
+        return mine ? [mine] : [];
+    }
+    return employees;
+}
+
+function visibleAttendance(){
+    if(isEmployee()){
+        const mine = myEmployee();
+        if(!mine) return [];
+        return attendance.filter(a=>a.employeeId === mine.id);
+    }
+    return attendance;
+}
+
+function nextEmployeeId(){
+    const nums = employees.map(e=>Number(String(e.id).replace(/\D/g, "")) || 0);
+    return "EMP" + String(Math.max(0, ...nums) + 1).padStart(3, "0");
+}
+
+function hexToRgb(hex){
+    const raw = String(hex || "").replace("#", "");
+    if(raw.length !== 6) return null;
+    const num = parseInt(raw, 16);
+    if(Number.isNaN(num)) return null;
+    return {r: num >> 16, g: (num >> 8) & 255, b: num & 255};
+}
+
+function rgbToHex(r, g, b){
+    return "#" + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("").toUpperCase();
+}
+
+function mixHex(a, b, t){
+    const A = hexToRgb(a), B = hexToRgb(b);
+    if(!A || !B) return a;
+    return rgbToHex(A.r + (B.r - A.r) * t, A.g + (B.g - A.g) * t, A.b + (B.b - A.b) * t);
+}
+
+function isDarkHex(hex){
+    const c = hexToRgb(hex);
+    if(!c) return false;
+    return (c.r * 299 + c.g * 587 + c.b * 114) / 1000 < 150;
+}
+
+function shadeColor(hex, amount){
+    const c = hexToRgb(hex);
+    if(!c) return hex;
+    return rgbToHex(c.r + amount, c.g + amount, c.b + amount);
+}
+
+function applyTheme(theme){
+    const t = cloneTheme(theme);
+    draftButtonStyle = t.buttonStyle || "rounded";
+    const root = document.documentElement;
+    const button = t.buttonColor;
+    const header = t.headerColor;
+    const bg = t.bgColor;
+    const text = t.textColor;
+    const sidebar = t.sidebarColor;
+    const headerDark = isDarkHex(header);
+    const bgDark = isDarkHex(bg);
+    const sideDark = isDarkHex(sidebar);
+
+    root.style.setProperty("--primary", button);
+    root.style.setProperty("--primary-dark", shadeColor(button, -28));
+    root.style.setProperty("--primary-soft", mixHex(button, "#FFFFFF", 0.82));
+    root.style.setProperty("--cta", button);
+    root.style.setProperty("--cta-dark", shadeColor(button, -28));
+    root.style.setProperty("--cta-soft", mixHex(button, "#FFFFFF", 0.82));
+    root.style.setProperty("--bg", bg);
+    root.style.setProperty("--surface", bgDark ? shadeColor(bg, 18) : "#FFFFFF");
+    root.style.setProperty("--text", text);
+    root.style.setProperty("--muted", mixHex(text, bg, 0.42));
+    root.style.setProperty("--border", mixHex(text, bg, 0.82));
+    root.style.setProperty("--header", header);
+    root.style.setProperty("--header-text", headerDark ? "#FFFFFF" : text);
+    root.style.setProperty("--sidebar", sidebar);
+    root.style.setProperty("--sidebar-text", sideDark ? "#C7C9E6" : mixHex(text, sidebar, 0.25));
+    document.body.classList.remove("btn-pill", "btn-square");
+    if(t.buttonStyle === "pill") document.body.classList.add("btn-pill");
+    if(t.buttonStyle === "square") document.body.classList.add("btn-square");
+}
+
+function themeFromInputs(){
+    return {
+        preset: "custom",
+        buttonColor: document.getElementById("themeButton").value,
+        headerColor: document.getElementById("themeHeader").value,
+        bgColor: document.getElementById("themeBg").value,
+        textColor: document.getElementById("themeText").value,
+        sidebarColor: document.getElementById("themeSidebar").value,
+        buttonStyle: draftButtonStyle
+    };
+}
+
+function fillThemeForm(theme){
+    const t = cloneTheme(theme);
+    const button = document.getElementById("themeButton");
+    if(!button) return;
+    button.value = t.buttonColor;
+    document.getElementById("themeHeader").value = t.headerColor;
+    document.getElementById("themeBg").value = t.bgColor;
+    document.getElementById("themeText").value = t.textColor;
+    document.getElementById("themeSidebar").value = t.sidebarColor;
+    document.querySelectorAll(".btn-style-opt").forEach(btn=>{
+        btn.classList.toggle("active", btn.dataset.style === t.buttonStyle);
+    });
+    const box = document.getElementById("themePresets");
+    box.innerHTML = Object.keys(THEME_PRESETS).map(key=>{
+        const p = THEME_PRESETS[key];
+        return `<button type="button" class="theme-swatch ${t.preset === key ? "active" : ""}" title="${key}" style="background:linear-gradient(135deg, ${p.buttonColor}, ${p.bgColor})" onclick="applyPreset('${key}')"></button>`;
+    }).join("");
+    const locked = !canEditTheme();
+    document.getElementById("themeLock").classList.toggle("show", isOwner() && locked);
+    document.getElementById("saveThemeBtn").disabled = isOwner() && locked;
+    ["themeButton","themeHeader","themeBg","themeText","themeSidebar"].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.disabled = isOwner() && locked;
+    });
+}
+
+function applyPreset(key){
+    if(!canEditTheme()){
+        toast("Owner can change appearance only once this month", "error");
+        return;
+    }
+    const theme = cloneTheme(THEME_PRESETS[key]);
+    theme.buttonStyle = draftButtonStyle;
+    fillThemeForm(theme);
+    applyTheme(theme);
+}
+
+function setButtonStyle(style){
+    if(!canEditTheme()){
+        toast("Owner can change appearance only once this month", "error");
+        return;
+    }
+    draftButtonStyle = style;
+    previewThemeFromInputs();
+}
+
+function previewThemeFromInputs(){
+    if(!currentUser) return;
+    const theme = themeFromInputs();
+    applyTheme(theme);
+    document.querySelectorAll(".btn-style-opt").forEach(btn=>{
+        btn.classList.toggle("active", btn.dataset.style === draftButtonStyle);
+    });
+}
+
+function saveCurrentTheme(){
+    if(!currentUser) return;
+    if(!canEditTheme()){
+        toast("Owner can change appearance only once this month", "error");
+        return;
+    }
+    const theme = themeFromInputs();
+    const idx = users.findIndex(u=>u.username === currentUser.username);
+    if(idx < 0) return;
+    users[idx].theme = theme;
+    if(isOwner()) users[idx].themeEditedAt = monthKey();
+    currentUser = users[idx];
+    persistCurrentUser();
+    saveUsers();
+    applyTheme(theme);
+    fillThemeForm(theme);
+    toast("Appearance saved on your login user");
+    pushUsersToSheet();
+}
+
+function applyRoleUI(){
+    document.body.classList.remove("role-employee", "role-owner", "role-admin");
+    if(currentUser) document.body.classList.add("role-" + currentUser.role);
+    document.getElementById("navEmployeesLabel").textContent = isEmployee() ? "My Profile" : "Employees";
+    document.getElementById("sidebarFoot").textContent = isEmployee()
+        ? "Employee workspace · own data only"
+        : isOwner()
+            ? "Owner workspace · cannot create owners"
+            : "Admin workspace · can create owners";
+    document.getElementById("quickActionsSub").textContent = isEmployee()
+        ? "Punch in, punch out, and your profile"
+        : "Common owner / admin tasks";
+    const s1 = document.getElementById("dashStat1Label");
+    if(s1){
+        document.getElementById("dashStat1Label").textContent = isEmployee() ? "My Employee ID" : "Total Employees";
+        document.getElementById("dashStat1Sub").textContent = isEmployee() ? "Linked to this login" : "All people in the sheet";
+        document.getElementById("dashStat2Label").textContent = isEmployee() ? "Approval" : "Approved Active";
+        document.getElementById("dashStat2Sub").textContent = isEmployee() ? "Owner must approve you first" : "Can mark attendance";
+        document.getElementById("dashStat3Label").textContent = isEmployee() ? "Today" : "Present Today";
+        document.getElementById("dashStat3Sub").textContent = isEmployee() ? "Your punch status" : "Today's attendance";
+        document.getElementById("dashStat4Label").textContent = isEmployee() ? "Hours today" : "Pending Approvals";
+        document.getElementById("dashStat4Sub").textContent = isEmployee() ? "Punch in to punch out" : "Employees + regularize";
+    }
+    document.getElementById("employeesPanelTitle").textContent = isEmployee() ? "My profile" : "Employees";
+    document.getElementById("employeesPanelSub").textContent = isEmployee()
+        ? "Create or edit only your own employee data"
+        : "Owner must approve each person before they can mark attendance";
+    const roleSelect = document.getElementById("newUserRole");
+    if(roleSelect){
+        roleSelect.innerHTML = isAdmin()
+            ? `<option value="employee">Employee</option><option value="admin">Admin</option><option value="owner">Owner</option>`
+            : `<option value="employee">Employee</option><option value="admin">Admin</option>`;
+    }
+}
+
+function setLoginRole(role, button){
+    loginRole = role;
+    document.querySelectorAll("#loginRoleTabs .tab-btn").forEach(b=>b.classList.remove("active"));
+    if(button) button.classList.add("active");
+    document.getElementById("loginBtn").textContent = "Login as " + role.charAt(0).toUpperCase() + role.slice(1);
+    document.getElementById("loginHint").textContent = LOGIN_HINTS[role];
+    document.getElementById("loginUser").placeholder = role;
+    document.getElementById("loginError").classList.remove("show");
+}
+
+function showLoginError(message){
+    const el = document.getElementById("loginError");
+    el.textContent = message;
+    el.classList.add("show");
+}
+
+function loginUser(){
+    const username = document.getElementById("loginUser").value.trim();
+    const password = document.getElementById("loginPass").value;
+    if(!username || !password){
+        showLoginError("Enter username and password.");
+        return;
+    }
+    const btn = document.getElementById("loginBtn");
+    btn.disabled = true;
+    fetchUsersFromSheet(false).then(count=>{
+        btn.disabled = false;
+        const sameName = users.find(u=>u.username.toLowerCase() === username.toLowerCase());
+        const user = users.find(u=>u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+        if(!user){
+            if(sameName){
+                showLoginError("Wrong password for " + sameName.username + ".");
+                return;
+            }
+            if(!count){
+                showLoginError("Could not load the login sheet in this browser. Refresh and try again, or use owner / owner123.");
+                return;
+            }
+            showLoginError("User \"" + username + "\" was not found in the login sheet. Check the Owner tab and username spelling.");
+            return;
+        }
+        if(user.role !== loginRole){
+            showLoginError("This account is a " + user.role + ". Choose the " + user.role + " tab, then login.");
+            return;
+        }
+        currentUser = user;
+        persistCurrentUser();
+        enterApp();
+        fetchEmployeesFromSheet(true);
+        notifyOwnerLogin(user);
+    }).catch(()=>{
+        btn.disabled = false;
+        showLoginError("Could not load the login sheet. Refresh and try naren / owner123 on the Owner tab.");
+    });
+}
+
+function loginAdmin(){ loginRole = "admin"; loginUser(); }
+
+function logoutUser(){
+    currentUser = null;
+    currentAdmin = null;
+    sessionStorage.removeItem("currentUser");
+    document.body.classList.remove("authed", "role-employee", "role-owner", "role-admin");
+    document.getElementById("loginPass").value = "";
+    applyTheme(DEFAULT_THEME);
+}
+
+function logoutAdmin(){ logoutUser(); }
+
+function enterApp(){
+    if(!currentUser) return;
+    document.body.classList.add("authed");
+    document.getElementById("loggedUserName").textContent = currentUser.username;
+    document.getElementById("loggedUserRole").textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+    document.getElementById("loggedAvatar").textContent = currentUser.username.charAt(0).toUpperCase();
+    applyTheme(currentUser.theme || DEFAULT_THEME);
+    applyRoleUI();
+    fillThemeForm(currentUser.theme);
+    updateDashboard();
+    renderEmployees();
+    renderAttendance();
+    renderApprovals();
+    renderUsers();
+    renderOwners();
+    const first = document.querySelector(".menu li:not([style*='display: none']) button, .menu li button");
+    showPage("dashboard", document.querySelector(".menu button"));
+}
+
+function notifyOwnerLogin(user){
+    const settings = JSON.parse(localStorage.getItem("sheetSettings") || "{}");
+    const phone = String(settings.ownerWhatsapp || "").replace(/\D/g, "");
+    if(!phone || user.role === "owner") return;
+    const text = encodeURIComponent(
+        "Tapped login alert%0AUser: " + user.username +
+        "%0ARole: " + user.role +
+        "%0AMobile: " + (user.mobile || "-") +
+        "%0AEmail: " + (user.email || "-")
+    );
+    window.open("https://wa.me/" + (phone.startsWith("91") ? phone : "91" + phone) + "?text=" + text, "_blank");
+}
+
+function testWhatsApp(){
+    const settings = JSON.parse(localStorage.getItem("sheetSettings") || "{}");
+    const phone = String(document.getElementById("ownerWhatsapp").value || settings.ownerWhatsapp || "").replace(/\D/g, "");
+    if(!phone){
+        alert("Save an owner WhatsApp number first.");
+        return;
+    }
+    window.open("https://wa.me/" + (phone.length === 10 ? "91" + phone : phone) + "?text=" + encodeURIComponent("Tapped test message from Settings"), "_blank");
+}
+
+function empNameCode(name){
+    return String(name || "XXX").replace(/[^A-Za-z]/g, "").toUpperCase().padEnd(3, "X").slice(0, 3);
+}
+
+function empIdCode(id){
+    return String(id || "").replace(/\D/g, "").slice(-3).padStart(3, "0");
+}
+
+function coordPart(value){
+    const n = Math.abs(Math.round(Number(value) || 0)) % 100;
+    return String(n).padStart(2, "0");
+}
+
+function punchTypeFromTime(time){
+    const hour = Number(String(time || "00:00").split(":")[0] || 0);
+    return hour < 12 ? "I" : "O";
+}
+
+function generatePunchCode(employee, date, time, forceType){
+    const emp = empIdCode(employee.id);
+    const name3 = empNameCode(employee.name);
+    const lat = coordPart(employee.latitude);
+    const lng = coordPart(employee.longitude);
+    const day = String((date ? new Date(date + "T00:00:00") : new Date()).getDate()).padStart(2, "0");
+    const hour = String(Number(String(time || "00:00").split(":")[0] || 0)).padStart(2, "0");
+    const type = forceType || punchTypeFromTime(time);
+    return (emp + name3 + lat + lng + day + hour + type).slice(0, 15);
+}
+
+function decodePunchCode(code){
+    const raw = String(code || "").replace(/\s/g, "").toUpperCase();
+    if(raw.length !== 15) return null;
+    const typeCode = raw.charAt(14);
+    return {
+        empNum: raw.slice(0, 3),
+        name3: raw.slice(3, 6),
+        lat: Number(raw.slice(6, 8)),
+        lng: Number(raw.slice(8, 10)),
+        day: Number(raw.slice(10, 12)),
+        hour: Number(raw.slice(12, 14)),
+        typeCode,
+        type: typeCode === "O" ? "Punch Out" : "Punch In"
+    };
+}
+
+function attachPunchCodes(record, employee){
+    record.punchCodeIn = record.punchIn
+        ? generatePunchCode(employee, record.date, record.punchIn, "I")
+        : "";
+    record.punchCodeOut = record.punchOut
+        ? generatePunchCode(employee, record.date, record.punchOut, "O")
+        : "";
+    return record;
+}
+
+function toast(message, type){
+    const el = document.getElementById("toast");
+    el.textContent = message;
+    el.className = "toast show " + (type === "error" ? "err" : "ok");
+    setTimeout(()=>el.classList.remove("show"), 2400);
+}
+
+function approvalBadge(status){
+    const map = {
+        Approved:"badge-green",
+        Pending:"badge-orange",
+        Rejected:"badge-red",
+        "N/A":"badge-gray"
+    };
+    return `<span class="badge ${map[status] || "badge-gray"}">${status || "N/A"}</span>`;
+}
+
+function approvedEmployees(){
+    return employees.filter(e=>e.status === "Active" && e.is_approved === "Approved");
+}
+
+function pendingEmployees(){
+    return employees.filter(e=>e.is_approved === "Pending");
+}
+
+function pendingRegularizations(){
+    return attendance.filter(a=>a.regularized === "Yes" && a.is_approved === "Pending");
+}
+
+function pendingCount(){
+    return pendingEmployees().length + pendingRegularizations().length;
+}
+
+function fillEmployeeSelect(selectId){
+    const select = document.getElementById(selectId);
+    select.innerHTML = `<option value="">Select Employee</option>`;
+    const list = isEmployee()
+        ? (myEmployee() && myEmployee().is_approved === "Approved" ? [myEmployee()] : [])
+        : approvedEmployees();
+    list.forEach(e=>{
+        select.innerHTML += `<option value="${e.id}">${e.id} - ${e.name}</option>`;
+    });
+    if(isEmployee() && myEmployee()) select.value = myEmployee().id;
+}
+
+function toggleSidebar(){
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("navOverlay").classList.toggle("show");
+}
+
+function closeSidebar(){
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("navOverlay").classList.remove("show");
+}
+
+const pageMeta = {
+    dashboard:{title:"Dashboard", sub:"Overview of people and attendance"},
+    employees:{title:"Employees", sub:"Approve and manage the employee sheet"},
+    attendance:{title:"Attendance", sub:"Hours, punches, and regularize status"},
+    approvals:{title:"Approvals", sub:"Owner and admin review queue"},
+    reports:{title:"Reports", sub:"Decode punch codes and export sheets"},
+    projects:{title:"Projects", sub:"Assignments across teams"},
+    owners:{title:"Owners", sub:"Admin-only module to add owner users"},
+    settings:{title:"Settings", sub:"Appearance, sheets, WhatsApp, and login users"}
+};
+
+const PAGE_ROLES = {
+    dashboard:["employee","owner","admin"],
+    employees:["employee","owner","admin"],
+    attendance:["employee","owner","admin"],
+    approvals:["owner","admin"],
+    reports:["owner","admin"],
+    projects:["owner","admin"],
+    owners:["admin"],
+    settings:["owner","admin"]
+};
+
+function showPage(page, button){
+    if(!currentUser) return;
+    if(!(PAGE_ROLES[page] || []).includes(currentRole())){
+        toast("You do not have access to this page", "error");
+        return;
+    }
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.getElementById(page).classList.add("active");
+    document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
+    if(button) button.classList.add("active");
+
+    const meta = pageMeta[page];
+    document.getElementById("pageTitle").innerText = isEmployee() && page === "employees" ? "My Profile" : meta.title;
+    document.getElementById("pageSub").innerText = isEmployee() && page === "employees"
+        ? "Create or edit your own employee data"
+        : meta.sub;
+    closeSidebar();
+
+    if(page === "employees") renderEmployees();
+    if(page === "attendance") renderAttendance();
+    if(page === "approvals") renderApprovals();
+    if(page === "projects") renderProjects();
+    if(page === "settings"){
+        renderUsers();
+        fillThemeForm(currentUser.theme);
+    }
+    if(page === "owners") renderOwners();
+}
+
+function showPageByName(page){
+    const button = [...document.querySelectorAll(".menu button")]
+        .find(b=>b.innerText.toLowerCase().includes(page));
+    showPage(page, button);
+}
+
+function openOwnEmployeeModal(){
+    const mine = myEmployee();
+    if(mine) openEmployeeModal(employees.indexOf(mine));
+    else openEmployeeModal();
+}
+
+function openEmployeeModal(index=null){
+    if(isEmployee()){
+        const mine = myEmployee();
+        if(index === null && mine){
+            index = employees.indexOf(mine);
+        }
+        if(index !== null && mine && employees[index] !== mine){
+            toast("You can only edit your own data", "error");
+            return;
+        }
+    }
+    document.getElementById("employeeModal").classList.add("show");
+    document.getElementById("employeeForm").reset();
+    document.getElementById("editEmployeeIndex").value = index === null ? "" : index;
+
+    if(index !== null){
+        const e = employees[index];
+        document.getElementById("employeeModalTitle").innerText = isEmployee() ? "Edit my profile" : "Edit Employee";
+        document.getElementById("empId").value = e.id;
+        document.getElementById("empName").value = e.name;
+        document.getElementById("empMobile").value = e.mobile;
+        document.getElementById("empJoining").value = e.joining;
+        document.getElementById("empRole").value = e.role;
+        document.getElementById("empTeam").value = e.team;
+        document.getElementById("empLeader").value = e.leader;
+        document.getElementById("empGender").value = e.gender;
+        document.getElementById("empCompany").value = e.company;
+        document.getElementById("empProject").value = e.project;
+        document.getElementById("empType").value = e.type;
+        document.getElementById("empStatus").value = e.status;
+        document.getElementById("empEmail").value = e.email;
+        document.getElementById("empEmergency").value = e.emergency;
+        document.getElementById("empAddress").value = e.address;
+        document.getElementById("empRemarks").value = e.remarks;
+        document.getElementById("empLat").value = e.latitude || "";
+        document.getElementById("empLng").value = e.longitude || "";
+        document.getElementById("empId").readOnly = isEmployee();
+    }else{
+        document.getElementById("employeeModalTitle").innerText = isEmployee() ? "Create my profile" : "Add Employee";
+        document.getElementById("empId").readOnly = false;
+        if(isEmployee()){
+            document.getElementById("empId").value = nextEmployeeId();
+            document.getElementById("empName").value = currentUser.username;
+            document.getElementById("empMobile").value = currentUser.mobile || "";
+            document.getElementById("empEmail").value = currentUser.email || "";
+            document.getElementById("empJoining").value = new Date().toISOString().split("T")[0];
+        }
+    }
+}
+
+function saveEmployee(){
+    const id = document.getElementById("empId").value.trim();
+    const name = document.getElementById("empName").value.trim();
+    const mobile = document.getElementById("empMobile").value.trim();
+
+    if(!id || !name || !mobile){
+        alert("Employee ID, Name and Mobile are required.");
+        return;
+    }
+
+    if(!/^[0-9]{10}$/.test(mobile)){
+        alert("Enter a valid 10 digit mobile number.");
+        return;
+    }
+
+    const latitude = document.getElementById("empLat").value.trim();
+    const longitude = document.getElementById("empLng").value.trim();
+    if(!latitude || !longitude || Number.isNaN(Number(latitude)) || Number.isNaN(Number(longitude))){
+        alert("Enter valid latitude and longitude for the employee location.");
+        return;
+    }
+
+    const editIndex = document.getElementById("editEmployeeIndex").value;
+
+    if(employees.some((e,i)=>e.id.toLowerCase() === id.toLowerCase() && i != editIndex)){
+        alert("Employee ID already exists.");
+        return;
+    }
+
+    if(employees.some((e,i)=>e.mobile === mobile && i != editIndex)){
+        alert("Mobile number already exists.");
+        return;
+    }
+
+    const existing = editIndex === "" ? null : employees[Number(editIndex)];
+
+    if(isEmployee() && existing && myEmployee() && existing.id !== myEmployee().id){
+        alert("You can only edit your own data.");
+        return;
+    }
+
+    if(isEmployee() && !existing && myEmployee()){
+        alert("You already have a profile. Use Edit.");
+        return;
+    }
+
+    const employee = {
+        id, name, mobile,
+        joining: document.getElementById("empJoining").value,
+        role: document.getElementById("empRole").value,
+        team: document.getElementById("empTeam").value,
+        leader: document.getElementById("empLeader").value,
+        gender: document.getElementById("empGender").value,
+        company: document.getElementById("empCompany").value,
+        project: document.getElementById("empProject").value,
+        type: document.getElementById("empType").value,
+        status: document.getElementById("empStatus").value,
+        email: document.getElementById("empEmail").value,
+        emergency: document.getElementById("empEmergency").value,
+        address: document.getElementById("empAddress").value,
+        remarks: document.getElementById("empRemarks").value,
+        latitude,
+        longitude,
+        is_approved: existing ? (existing.is_approved || "Pending") : "Pending"
+    };
+
+    if(editIndex === ""){
+        employees.push(employee);
+        if(isEmployee()){
+            const idx = users.findIndex(u=>u.username === currentUser.username);
+            if(idx >= 0){
+                users[idx].employeeId = employee.id;
+                currentUser = users[idx];
+                persistCurrentUser();
+                saveUsers();
+            }
+        }else{
+            ensureEmployeeLogin(employee);
+        }
+        toast(isEmployee() ? "Your profile was submitted for approval" : "Employee submitted for owner approval");
+    }else{
+        employees[Number(editIndex)] = employee;
+        toast(isEmployee() ? "Your profile was updated" : "Employee updated");
+    }
+
+    saveEmployees();
+    closeModal("employeeModal");
+    renderEmployees();
+    updateDashboard();
+}
+
+function renderEmployees(){
+    const search = document.getElementById("employeeSearch")?.value.toLowerCase() || "";
+    const team = document.getElementById("teamFilter")?.value || "";
+    const status = document.getElementById("employeeStatusFilter")?.value || "";
+    const approval = document.getElementById("employeeApprovalFilter")?.value || "";
+
+    const source = visibleEmployees();
+    const filtered = source.filter(e=>{
+        const matchesSearch =
+            e.name.toLowerCase().includes(search) ||
+            e.id.toLowerCase().includes(search) ||
+            e.mobile.includes(search);
+        return matchesSearch &&
+            (!team || e.team === team) &&
+            (!status || e.status === status) &&
+            (!approval || e.is_approved === approval);
+    });
+
+    const tbody = document.getElementById("employeeTable");
+    tbody.innerHTML = "";
+
+    if(!filtered.length){
+        tbody.innerHTML = `<tr><td colspan="15"><div class="empty"><strong>No employees found</strong>Try another filter or add a new employee.</div></td></tr>`;
+    }
+
+    filtered.forEach(e=>{
+        const index = employees.indexOf(e);
+        const canApprove = isStaff() && e.is_approved === "Pending";
+        tbody.innerHTML += `
+        <tr>
+            <td><strong>${e.id}</strong></td>
+            <td>${e.name}</td>
+            <td>${e.mobile}</td>
+            <td>${formatDate(e.joining)}</td>
+            <td>${e.role || "-"}</td>
+            <td>${e.team || "-"}</td>
+            <td>${e.leader || "-"}</td>
+            <td>${e.gender || "-"}</td>
+            <td>${e.company || "-"}</td>
+            <td>${e.project || "-"}</td>
+            <td>${e.latitude || "-"}</td>
+            <td>${e.longitude || "-"}</td>
+            <td><span class="badge ${e.status === "Active" ? "badge-green" : "badge-gray"}">${e.status}</span></td>
+            <td>${approvalBadge(e.is_approved)}</td>
+            <td>
+                <div class="action-row">
+                    ${canApprove ? `<button class="btn btn-success btn-sm" onclick="approveEmployee(${index})">Approve</button>` : ""}
+                    <button class="btn btn-blue btn-sm" onclick="openEmployeeModal(${index})">Edit</button>
+                    ${isStaff() ? `<button class="btn btn-danger btn-sm" onclick="deleteEmployee(${index})">Delete</button>` : ""}
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    updateEmployeeFilters();
+}
+
+function deleteEmployee(index){
+    if(!isStaff()){
+        toast("Employees cannot delete records", "error");
+        return;
+    }
+    if(!confirm("Are you sure you want to delete this employee?")) return;
+    employees.splice(index, 1);
+    saveEmployees();
+    renderEmployees();
+    updateDashboard();
+}
+
+function updateEmployeeFilters(){
+    const teams = [...new Set(employees.map(e=>e.team).filter(Boolean))];
+    const teamFilter = document.getElementById("teamFilter");
+    const current = teamFilter.value;
+    teamFilter.innerHTML = `<option value="">All Teams</option>`;
+    teams.forEach(team=>{
+        teamFilter.innerHTML += `<option value="${team}">${team}</option>`;
+    });
+    teamFilter.value = current;
+
+    const attendanceTeamFilter = document.getElementById("attendanceTeamFilter");
+    if(attendanceTeamFilter){
+        const currentAttendance = attendanceTeamFilter.value;
+        attendanceTeamFilter.innerHTML = `<option value="">All Teams</option>`;
+        teams.forEach(team=>{
+            attendanceTeamFilter.innerHTML += `<option value="${team}">${team}</option>`;
+        });
+        attendanceTeamFilter.value = currentAttendance;
+    }
+}
+
+function openAttendanceModal(){
+    if(!isStaff()){
+        toast("Employees cannot mark attendance for others", "error");
+        return;
+    }
+    document.getElementById("attendanceModal").classList.add("show");
+    document.getElementById("attDate").value = new Date().toISOString().split("T")[0];
+    fillEmployeeSelect("attEmployee");
+}
+
+function loadEmployeeAttendanceData(){
+    const id = document.getElementById("attEmployee").value;
+    const employee = employees.find(e=>e.id === id);
+    if(!employee) return;
+    document.getElementById("attProject").value = employee.project || "";
+    document.getElementById("attCompany").value = employee.company || "";
+    document.getElementById("attLatIn").value = employee.latitude || "";
+    document.getElementById("attLongIn").value = employee.longitude || "";
+    document.getElementById("attLatOut").value = employee.latitude || "";
+    document.getElementById("attLongOut").value = employee.longitude || "";
+}
+
+function saveAttendance(){
+    if(!isStaff()){
+        alert("Employees cannot mark attendance. Apply regularize instead.");
+        return;
+    }
+    const date = document.getElementById("attDate").value;
+    const employeeId = document.getElementById("attEmployee").value;
+
+    if(!date || !employeeId){
+        alert("Date and Employee are required.");
+        return;
+    }
+
+    const employee = employees.find(e=>e.id === employeeId);
+    if(!employee || employee.is_approved !== "Approved"){
+        alert("Only owner-approved employees can mark attendance.");
+        return;
+    }
+
+    const punchIn = document.getElementById("attPunchIn").value;
+    const punchOut = document.getElementById("attPunchOut").value;
+    const regularized = document.getElementById("attRegularized").value;
+
+    const existingIndex = attendance.findIndex(a=>a.date === date && a.employeeId === employeeId);
+    const existing = existingIndex >= 0 ? attendance[existingIndex] : null;
+
+    let is_approved = "N/A";
+    if(regularized === "Yes"){
+        if(existing && existing.regularized === "Yes" && existing.is_approved && existing.is_approved !== "N/A"){
+            is_approved = existing.is_approved;
+        }else{
+            is_approved = "Pending";
+        }
+    }
+
+    const record = {
+        date,
+        employeeId: employee.id,
+        name: employee.name,
+        punchIn, punchOut,
+        workingHours: calculateWorkingHours(punchIn, punchOut),
+        shift: document.getElementById("attShift").value,
+        latIn: document.getElementById("attLatIn").value,
+        longIn: document.getElementById("attLongIn").value,
+        latOut: document.getElementById("attLatOut").value,
+        longOut: document.getElementById("attLongOut").value,
+        project: document.getElementById("attProject").value,
+        company: document.getElementById("attCompany").value,
+        overtime: document.getElementById("attOvertime").value,
+        regularized,
+        status: document.getElementById("attStatus").value,
+        remark: document.getElementById("attRemark").value,
+        is_approved
+    };
+
+    if(!record.latIn) record.latIn = employee.latitude || "";
+    if(!record.longIn) record.longIn = employee.longitude || "";
+    if(!record.latOut) record.latOut = employee.latitude || "";
+    if(!record.longOut) record.longOut = employee.longitude || "";
+    attachPunchCodes(record, employee);
+
+    if(existingIndex >= 0) attendance[existingIndex] = record;
+    else attendance.push(record);
+
+    saveAttendanceData();
+    closeModal("attendanceModal");
+    renderAttendance();
+    updateDashboard();
+    toast(regularized === "Yes" ? "Regularize sent to owner" : "Attendance saved");
+}
+
+function openRegularizeModal(presetIndex){
+    if(isEmployee() && !myEmployee()){
+        toast("Create your profile first, then apply regularize", "error");
+        return;
+    }
+    document.getElementById("regularizeModal").classList.add("show");
+    document.getElementById("regDate").value = new Date().toISOString().split("T")[0];
+    document.getElementById("regReason").value = "";
+    document.getElementById("regPunchIn").value = "";
+    document.getElementById("regPunchOut").value = "";
+    fillEmployeeSelect("regEmployee");
+    document.getElementById("regEmployee").disabled = isEmployee();
+
+    if(presetIndex !== undefined && attendance[presetIndex]){
+        const a = attendance[presetIndex];
+        if(isEmployee() && myEmployee() && a.employeeId !== myEmployee().id){
+            toast("You can only regularize your own attendance", "error");
+            closeModal("regularizeModal");
+            return;
+        }
+        document.getElementById("regDate").value = a.date;
+        document.getElementById("regEmployee").value = a.employeeId;
+        document.getElementById("regPunchIn").value = a.punchIn || "";
+        document.getElementById("regPunchOut").value = a.punchOut || "";
+        document.getElementById("regReason").value = a.remark || "";
+    }
+}
+
+function submitRegularize(){
+    const date = document.getElementById("regDate").value;
+    const employeeId = document.getElementById("regEmployee").value;
+    const reason = document.getElementById("regReason").value.trim();
+    const punchIn = document.getElementById("regPunchIn").value;
+    const punchOut = document.getElementById("regPunchOut").value;
+
+    if(!date || !employeeId){
+        alert("Date and Employee are required.");
+        return;
+    }
+
+    if(isEmployee()){
+        const mine = myEmployee();
+        if(!mine || mine.id !== employeeId){
+            alert("You can only apply regularize for yourself.");
+            return;
+        }
+    }
+
+    if(!reason){
+        alert("Please enter a reason for regularization.");
+        return;
+    }
+
+    const employee = employees.find(e=>e.id === employeeId);
+    if(!employee || employee.is_approved !== "Approved"){
+        alert("Only owner-approved employees can apply for regularize.");
+        return;
+    }
+
+    const existingIndex = attendance.findIndex(a=>a.date === date && a.employeeId === employeeId);
+    const existing = existingIndex >= 0 ? attendance[existingIndex] : {};
+
+    const record = {
+        date,
+        employeeId: employee.id,
+        name: employee.name,
+        punchIn: punchIn || existing.punchIn || "",
+        punchOut: punchOut || existing.punchOut || "",
+        workingHours: calculateWorkingHours(punchIn || existing.punchIn, punchOut || existing.punchOut),
+        shift: existing.shift || "Day Shift",
+        latIn: existing.latIn || employee.latitude || "",
+        longIn: existing.longIn || employee.longitude || "",
+        latOut: existing.latOut || employee.latitude || "",
+        longOut: existing.longOut || employee.longitude || "",
+        project: existing.project || employee.project || "",
+        company: existing.company || employee.company || "",
+        overtime: existing.overtime || "0",
+        regularized: "Yes",
+        status: existing.status || "Present",
+        remark: reason,
+        is_approved: "Pending"
+    };
+
+    attachPunchCodes(record, employee);
+
+    if(existingIndex >= 0) attendance[existingIndex] = record;
+    else attendance.push(record);
+
+    saveAttendanceData();
+    closeModal("regularizeModal");
+    renderAttendance();
+    updateDashboard();
+    toast("Regularize request sent to owner");
+}
+
+function calculateWorkingHours(start, end){
+    if(!start || !end) return "0h 00m";
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+    let startMinutes = sh * 60 + sm;
+    let endMinutes = eh * 60 + em;
+    if(endMinutes < startMinutes) endMinutes += 24 * 60;
+    const diff = endMinutes - startMinutes;
+    return `${Math.floor(diff / 60)}h ${String(diff % 60).padStart(2, "0")}m`;
+}
+
+function renderAttendance(){
+    const date = document.getElementById("attendanceDate")?.value || "";
+    const search = document.getElementById("attendanceSearch")?.value.toLowerCase() || "";
+    const team = document.getElementById("attendanceTeamFilter")?.value || "";
+    const shift = document.getElementById("attendanceShiftFilter")?.value || "";
+    const status = document.getElementById("attendanceStatusFilter")?.value || "";
+    const approval = document.getElementById("attendanceApprovalFilter")?.value || "";
+
+    const source = visibleAttendance();
+    const filtered = source.filter(a=>{
+        const employee = employees.find(e=>e.id === a.employeeId);
+        return (!date || a.date === date) &&
+            (a.name.toLowerCase().includes(search) || a.employeeId.toLowerCase().includes(search)) &&
+            (!team || (employee && employee.team === team)) &&
+            (!shift || a.shift === shift) &&
+            (!status || a.status === status) &&
+            (!approval || a.is_approved === approval);
+    });
+
+    const tbody = document.getElementById("attendanceTable");
+    tbody.innerHTML = "";
+
+    if(!filtered.length){
+        tbody.innerHTML = `<tr><td colspan="18"><div class="empty"><strong>No attendance records</strong>Mark attendance or apply for regularize.</div></td></tr>`;
+    }
+
+    filtered.forEach(a=>{
+        const index = attendance.indexOf(a);
+        const statusClass = a.status === "Present" ? "badge-green" : a.status === "Leave" ? "badge-orange" : "badge-red";
+        tbody.innerHTML += `
+        <tr>
+            <td>${formatDate(a.date)}</td>
+            <td><strong>${a.employeeId}</strong></td>
+            <td>${a.name}</td>
+            <td>${formatTime(a.punchIn)}</td>
+            <td>${formatTime(a.punchOut)}</td>
+            <td><strong>${a.workingHours}</strong></td>
+            <td>${a.shift}</td>
+            <td>${a.project || "-"}</td>
+            <td>${a.company || "-"}</td>
+            <td>${a.latIn || "-"}<br>${a.longIn || "-"}</td>
+            <td>${a.latOut || "-"}<br>${a.longOut || "-"}</td>
+            <td><span class="badge ${statusClass}">${a.status}</span></td>
+            <td><span class="badge ${a.regularized === "Yes" ? "badge-purple" : "badge-gray"}">${a.regularized}</span></td>
+            <td>${approvalBadge(a.is_approved)}</td>
+            <td>${a.punchCodeIn ? `<span class="punch-code">${a.punchCodeIn}</span>` : "-"}</td>
+            <td>${a.punchCodeOut ? `<span class="punch-code">${a.punchCodeOut}</span>` : "-"}</td>
+            <td>${a.remark || "-"}</td>
+            <td>
+                <div class="action-row">
+                    ${a.regularized !== "Yes" || a.is_approved === "Rejected"
+                        ? `<button class="btn btn-blue btn-sm" onclick="openRegularizeModal(${index})">Regularize</button>`
+                        : ""}
+                    ${isStaff() && a.regularized === "Yes" && a.is_approved === "Pending"
+                        ? `<button class="btn btn-success btn-sm" onclick="approveRegularize(${index})">Approve</button>`
+                        : ""}
+                    ${isStaff() ? `<button class="btn btn-danger btn-sm" onclick="deleteAttendance(${index})">Delete</button>` : ""}
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    updateAttendanceStats();
+}
+
+function deleteAttendance(index){
+    if(!isStaff()){
+        toast("Employees cannot delete attendance", "error");
+        return;
+    }
+    if(!confirm("Delete this attendance record?")) return;
+    attendance.splice(index, 1);
+    saveAttendanceData();
+    renderAttendance();
+    updateDashboard();
+}
+
+function todayKey(){
+    return new Date().toISOString().split("T")[0];
+}
+
+function nowTime(){
+    const d = new Date();
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+
+function myTodayAttendance(){
+    const mine = myEmployee();
+    if(!mine) return null;
+    return attendance.find(a=>a.date === todayKey() && a.employeeId === mine.id) || null;
+}
+
+function captureLocation(){
+    return new Promise(resolve=>{
+        if(!navigator.geolocation){
+            resolve({lat:"", lng:""});
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            pos=>resolve({lat: String(pos.coords.latitude.toFixed(6)), lng: String(pos.coords.longitude.toFixed(6))}),
+            ()=>resolve({lat:"", lng:""}),
+            {enableHighAccuracy:true, timeout:8000, maximumAge:60000}
+        );
+    });
+}
+
+function upsertMyAttendance(patch){
+    const employee = myEmployee();
+    if(!employee) return null;
+    const date = todayKey();
+    const existingIndex = attendance.findIndex(a=>a.date === date && a.employeeId === employee.id);
+    const existing = existingIndex >= 0 ? attendance[existingIndex] : {};
+    const record = {
+        date,
+        employeeId: employee.id,
+        name: employee.name,
+        punchIn: existing.punchIn || "",
+        punchOut: existing.punchOut || "",
+        workingHours: existing.workingHours || "0h 00m",
+        shift: existing.shift || "Day Shift",
+        latIn: existing.latIn || employee.latitude || "",
+        longIn: existing.longIn || employee.longitude || "",
+        latOut: existing.latOut || employee.latitude || "",
+        longOut: existing.longOut || employee.longitude || "",
+        project: existing.project || employee.project || "",
+        company: existing.company || employee.company || "",
+        overtime: existing.overtime || "0",
+        regularized: existing.regularized || "No",
+        status: existing.status || "Present",
+        remark: existing.remark || "",
+        is_approved: existing.is_approved || "N/A",
+        ...patch
+    };
+    record.workingHours = calculateWorkingHours(record.punchIn, record.punchOut);
+    attachPunchCodes(record, employee);
+    if(existingIndex >= 0) attendance[existingIndex] = record;
+    else attendance.push(record);
+    saveAttendanceData();
+    renderAttendance();
+    updateDashboard();
+    return record;
+}
+
+async function employeePunch(kind){
+    if(!isEmployee()){
+        toast("Only employee login can punch from dashboard", "error");
+        return;
+    }
+    const employee = myEmployee();
+    if(!employee){
+        toast("Create your profile first, then punch in", "error");
+        return;
+    }
+    if(employee.is_approved !== "Approved"){
+        toast("Owner must approve you before punch in / punch out", "error");
+        return;
+    }
+    const todayRec = myTodayAttendance();
+    if(kind === "in"){
+        if(todayRec && todayRec.punchIn){
+            toast("You already punched in today at " + formatTime(todayRec.punchIn), "error");
+            return;
+        }
+        const loc = await captureLocation();
+        upsertMyAttendance({
+            punchIn: nowTime(),
+            status: "Present",
+            latIn: loc.lat || employee.latitude || "",
+            longIn: loc.lng || employee.longitude || ""
+        });
+        toast("Punched in");
+        return;
+    }
+    if(kind === "out"){
+        if(!todayRec || !todayRec.punchIn){
+            toast("Punch in first", "error");
+            return;
+        }
+        if(todayRec.punchOut){
+            toast("You already punched out today at " + formatTime(todayRec.punchOut), "error");
+            return;
+        }
+        const loc = await captureLocation();
+        upsertMyAttendance({
+            punchOut: nowTime(),
+            latOut: loc.lat || employee.latitude || "",
+            longOut: loc.lng || employee.longitude || ""
+        });
+        toast("Punched out");
+    }
+}
+
+function renderEmpPunchStatus(){
+    const box = document.getElementById("empPunchStatus");
+    const inBtn = document.getElementById("empPunchInBtn");
+    const outBtn = document.getElementById("empPunchOutBtn");
+    const inQuick = document.getElementById("empPunchInQuick");
+    const outQuick = document.getElementById("empPunchOutQuick");
+    const setPunchBtns = (canIn, canOut)=>{
+        if(inBtn) inBtn.disabled = !canIn;
+        if(outBtn) outBtn.disabled = !canOut;
+        if(inQuick) inQuick.disabled = !canIn;
+        if(outQuick) outQuick.disabled = !canOut;
+    };
+    if(!box) return;
+    if(!isEmployee()){
+        box.textContent = "";
+        return;
+    }
+    const employee = myEmployee();
+    const rec = myTodayAttendance();
+    if(!employee){
+        box.innerHTML = "<strong>No profile yet.</strong> Create your employee profile, wait for owner approval, then punch in.";
+        setPunchBtns(false, false);
+        return;
+    }
+    if(employee.is_approved !== "Approved"){
+        box.innerHTML = "<strong>" + employee.name + " · " + employee.id + "</strong> Approval: " + (employee.is_approved || "Pending") + ". Punch buttons unlock after the owner approves you.";
+        setPunchBtns(false, false);
+        return;
+    }
+    const punchedIn = rec && rec.punchIn;
+    const punchedOut = rec && rec.punchOut;
+    box.innerHTML = "<strong>" + employee.name + " · " + employee.id + "</strong><br>Today: In " +
+        (punchedIn ? formatTime(rec.punchIn) : "—") + " · Out " +
+        (punchedOut ? formatTime(rec.punchOut) : "—") +
+        (punchedIn && punchedOut ? " · " + rec.workingHours : "");
+    setPunchBtns(!punchedIn, punchedIn && !punchedOut);
+}
+
+function updateAttendanceStats(){
+    const today = todayKey();
+    const todayRecords = (isEmployee() ? visibleAttendance() : attendance).filter(a=>a.date === today);
+    const present = todayRecords.filter(a=>a.status === "Present").length;
+
+    document.getElementById("attendancePresent").innerText = present;
+    if(!isEmployee()){
+        document.getElementById("presentToday").innerText = present;
+    }
+    document.getElementById("absentToday") && (document.getElementById("absentToday").innerText =
+        Math.max((isEmployee() ? (myEmployee() ? 1 : 0) : approvedEmployees().length) - present, 0));
+
+    document.getElementById("regularizedCount").innerText =
+        (isEmployee() ? visibleAttendance() : attendance).filter(a=>a.regularized === "Yes" && a.is_approved === "Pending").length;
+
+    let totalMinutes = 0;
+    todayRecords.forEach(a=>{
+        if(a.punchIn && a.punchOut){
+            const [sh, sm] = a.punchIn.split(":").map(Number);
+            const [eh, em] = a.punchOut.split(":").map(Number);
+            let start = sh * 60 + sm;
+            let end = eh * 60 + em;
+            if(end < start) end += 1440;
+            totalMinutes += end - start;
+        }
+    });
+
+    document.getElementById("totalHours").innerText =
+        `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`;
+
+    document.getElementById("lateCount").innerText =
+        todayRecords.filter(a=>a.punchIn && a.punchIn > "09:15").length;
+}
+
+function switchApprovalTab(tab){
+    approvalTab = tab;
+    document.getElementById("tabEmp").classList.toggle("active", tab === "employees");
+    document.getElementById("tabReg").classList.toggle("active", tab === "regularize");
+    document.getElementById("approvalEmployees").style.display = tab === "employees" ? "grid" : "none";
+    document.getElementById("approvalRegularize").style.display = tab === "regularize" ? "grid" : "none";
+}
+
+function renderApprovals(){
+    const empBox = document.getElementById("approvalEmployees");
+    const regBox = document.getElementById("approvalRegularize");
+    const pendingEmp = pendingEmployees();
+    const pendingReg = pendingRegularizations();
+
+    document.getElementById("pendingEmpCount").innerText = pendingEmp.length;
+    document.getElementById("pendingRegCount").innerText = pendingReg.length;
+    document.getElementById("approvedEmpCount").innerText =
+        employees.filter(e=>e.is_approved === "Approved").length;
+    document.getElementById("approvedRegCount").innerText =
+        attendance.filter(a=>a.regularized === "Yes" && a.is_approved === "Approved").length;
+    document.getElementById("tabEmpCount").innerText = pendingEmp.length;
+    document.getElementById("tabRegCount").innerText = pendingReg.length;
+
+    if(!pendingEmp.length){
+        empBox.innerHTML = `<div class="empty"><strong>No employee approvals</strong>New employees will appear here for the owner.</div>`;
+    }else{
+        empBox.innerHTML = pendingEmp.map(e=>{
+            const index = employees.indexOf(e);
+            return `
+            <div class="approval-card">
+                <div>
+                    <h4>${e.name} · ${e.id}</h4>
+                    <span class="badge badge-orange">Pending employee</span>
+                    <div class="approval-meta">
+                        <span>${e.role || "No role"}</span>
+                        <span>${e.team || "No team"}</span>
+                        <span>${e.mobile}</span>
+                        <span>Joined ${formatDate(e.joining)}</span>
+                        <span>${e.project || "No project"}</span>
+                    </div>
+                </div>
+                <div class="approval-actions">
+                    <button class="btn btn-danger btn-sm" onclick="rejectEmployee(${index})">Reject</button>
+                    <button class="btn btn-success btn-sm" onclick="approveEmployee(${index})">Approve</button>
+                </div>
+            </div>`;
+        }).join("");
+    }
+
+    if(!pendingReg.length){
+        regBox.innerHTML = `<div class="empty"><strong>No regularize requests</strong>Applications from attendance will show here.</div>`;
+    }else{
+        regBox.innerHTML = pendingReg.map(a=>{
+            const index = attendance.indexOf(a);
+            return `
+            <div class="approval-card">
+                <div>
+                    <h4>${a.name} · ${a.employeeId}</h4>
+                    <span class="badge badge-purple">Regularize request</span>
+                    <div class="approval-meta">
+                        <span>${formatDate(a.date)}</span>
+                        <span>In ${formatTime(a.punchIn)}</span>
+                        <span>Out ${formatTime(a.punchOut)}</span>
+                        <span>${a.workingHours}</span>
+                        <span>${a.shift || ""}</span>
+                    </div>
+                    <p style="margin-top:8px;font-size:13px;">${a.remark || "No reason given"}</p>
+                </div>
+                <div class="approval-actions">
+                    <button class="btn btn-danger btn-sm" onclick="rejectRegularize(${index})">Reject</button>
+                    <button class="btn btn-success btn-sm" onclick="approveRegularize(${index})">Approve</button>
+                </div>
+            </div>`;
+        }).join("");
+    }
+
+    switchApprovalTab(approvalTab);
+}
+
+function approveEmployee(index){
+    if(!isStaff()){
+        toast("Only owner or admin can approve", "error");
+        return;
+    }
+    employees[index].is_approved = "Approved";
+    saveEmployees();
+    renderEmployees();
+    renderApprovals();
+    updateDashboard();
+    toast(employees[index].name + " approved");
+}
+
+function rejectEmployee(index){
+    if(!isStaff()){
+        toast("Only owner or admin can reject", "error");
+        return;
+    }
+    if(!confirm("Reject this employee?")) return;
+    employees[index].is_approved = "Rejected";
+    saveEmployees();
+    renderEmployees();
+    renderApprovals();
+    updateDashboard();
+    toast(employees[index].name + " rejected", "error");
+}
+
+function approveRegularize(index){
+    if(!isStaff()){
+        toast("Only owner or admin can approve", "error");
+        return;
+    }
+    attendance[index].is_approved = "Approved";
+    saveAttendanceData();
+    renderAttendance();
+    renderApprovals();
+    updateDashboard();
+    toast("Regularize approved for " + attendance[index].name);
+}
+
+function rejectRegularize(index){
+    if(!isStaff()){
+        toast("Only owner or admin can reject", "error");
+        return;
+    }
+    if(!confirm("Reject this regularization request?")) return;
+    attendance[index].is_approved = "Rejected";
+    saveAttendanceData();
+    renderAttendance();
+    renderApprovals();
+    updateDashboard();
+    toast("Regularize rejected", "error");
+}
+
+function updateDashboard(){
+    const approvedActive = approvedEmployees().length;
+    const pendingEmp = pendingEmployees();
+    const pendingReg = pendingRegularizations();
+    const pending = pendingEmp.length + pendingReg.length;
+    const mine = myEmployee();
+    const visible = visibleEmployees();
+    const todayRec = myTodayAttendance();
+
+    if(isEmployee()){
+        document.getElementById("totalEmployees").innerText = mine ? mine.id : "—";
+        document.getElementById("activeEmployees").innerText = mine ? (mine.is_approved || "Pending") : "No profile";
+        document.getElementById("presentToday").innerText = todayRec && todayRec.punchIn
+            ? (todayRec.punchOut ? "Out" : "In")
+            : "Not punched";
+        document.getElementById("pendingApprovals").innerText = todayRec && todayRec.workingHours ? todayRec.workingHours : "0h 00m";
+        document.getElementById("employeeCount").innerText = visible.length;
+        document.getElementById("employeeApproved").innerText = mine && mine.is_approved === "Approved" ? 1 : 0;
+        document.getElementById("employeePending").innerText = mine && mine.is_approved === "Pending" ? 1 : 0;
+    }else{
+        document.getElementById("totalEmployees").innerText = employees.length;
+        document.getElementById("activeEmployees").innerText = approvedActive;
+        document.getElementById("employeeCount").innerText = employees.length;
+        document.getElementById("employeeApproved").innerText =
+            employees.filter(e=>e.is_approved === "Approved").length;
+        document.getElementById("employeePending").innerText = pendingEmp.length;
+    }
+
+    const teams = new Set(employees.map(e=>e.team).filter(Boolean));
+    const teamCount = document.getElementById("teamCount");
+    if(teamCount) teamCount.innerText = teams.size;
+
+    const projects = new Set((isEmployee() ? visible : employees).map(e=>e.project).filter(Boolean));
+    document.getElementById("projectCount").innerText = projects.size;
+    if(!isEmployee()){
+        document.getElementById("pendingApprovals").innerText = pending;
+    }
+
+    const badge = document.getElementById("approvalBadge");
+    badge.textContent = pending;
+    badge.classList.toggle("show", pending > 0);
+
+    const dash = document.getElementById("dashboardPending");
+    const items = [
+        ...pendingEmp.slice(0, 3).map(e=>({
+            title: e.name + " · " + e.id,
+            sub: "Employee approval · " + (e.role || "No role")
+        })),
+        ...pendingReg.slice(0, 3).map(a=>({
+            title: a.name + " · " + a.employeeId,
+            sub: "Regularize · " + formatDate(a.date)
+        }))
+    ].slice(0, 4);
+
+    if(!items.length){
+        dash.innerHTML = `<div class="empty"><strong>All clear</strong>No employee or regularize requests waiting.</div>`;
+    }else{
+        dash.innerHTML = items.map(item=>`
+            <div class="pending-item">
+                <div>
+                    <strong>${item.title}</strong>
+                    <small>${item.sub}</small>
+                </div>
+                <button class="btn btn-blue btn-sm" onclick="showPageByName('approvals')">Review</button>
+            </div>
+        `).join("");
+    }
+
+    updateAttendanceStats();
+    renderEmpPunchStatus();
+}
+
+function renderProjects(){
+    const projects = {};
+    employees.forEach(e=>{
+        if(!e.project) return;
+        if(!projects[e.project]) projects[e.project] = [];
+        projects[e.project].push(e);
+    });
+
+    const container = document.getElementById("projectsList");
+    container.innerHTML = "";
+
+    const names = Object.keys(projects);
+    if(!names.length){
+        container.innerHTML = `<div class="empty"><strong>No projects yet</strong>Assign a project on an employee record.</div>`;
+        return;
+    }
+
+    names.forEach(project=>{
+        const approved = projects[project].filter(e=>e.is_approved === "Approved").length;
+        container.innerHTML += `
+            <div class="project-card">
+                <strong>${project}</strong>
+                <p>${projects[project].length} employee(s) · ${approved} approved</p>
+            </div>`;
+    });
+}
+
+function downloadCSV(data, filename){
+    if(!data.length){
+        alert("No data to export.");
+        return;
+    }
+
+    const headers = Object.keys(data[0]);
+    const rows = [headers.join(",")];
+    data.forEach(row=>{
+        rows.push(headers.map(h=>`"${String(row[h] ?? "").replace(/"/g, '""')}"`).join(","));
+    });
+
+    const blob = new Blob([rows.join("\n")], {type:"text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function exportEmployees(){
+    downloadCSV(employees, "employees.csv");
+}
+
+function exportAttendance(){
+    downloadCSV(attendance, "attendance.csv");
+}
+
+function formatDate(date){
+    if(!date) return "-";
+    return new Date(date + "T00:00:00").toLocaleDateString("en-IN");
+}
+
+function formatTime(time){
+    if(!time) return "--";
+    const [h, m] = time.split(":");
+    const date = new Date();
+    date.setHours(h, m);
+    return date.toLocaleTimeString("en-IN", {hour:"2-digit", minute:"2-digit"});
+}
+
+function closeModal(id){
+    document.getElementById(id).classList.remove("show");
+}
+
+function rawSheetSettings(){
+    return JSON.parse(localStorage.getItem("sheetSettings") || "{}");
+}
+
+function sheetSettings(){
+    const saved = rawSheetSettings();
+    const employeeSrc = saved.employeeSheetId || BUILT_IN_SHEETS.employeeSheetId;
+    const attendanceSrc = saved.attendanceSheetId || BUILT_IN_SHEETS.attendanceSheetId;
+    const usersSrc = saved.usersSheetId || BUILT_IN_SHEETS.usersSheetId;
+    return {
+        employeeSheetId: extractSheetId(employeeSrc),
+        attendanceSheetId: extractSheetId(attendanceSrc),
+        usersSheetId: extractSheetId(usersSrc),
+        employeeGid: saved.employeeGid || extractGid(employeeSrc) || extractGid(BUILT_IN_SHEETS.employeeSheetId),
+        attendanceGid: saved.attendanceGid || extractGid(attendanceSrc) || extractGid(BUILT_IN_SHEETS.attendanceSheetId),
+        usersGid: saved.usersGid || extractGid(usersSrc) || extractGid(BUILT_IN_SHEETS.usersSheetId),
+        appsScriptUrl: String(saved.appsScriptUrl || BUILT_IN_SHEETS.appsScriptUrl || "").trim(),
+        ownerWhatsapp: String(saved.ownerWhatsapp || "").trim()
+    };
+}
+
+function missingSheetFields(){
+    const s = sheetSettings();
+    const missing = [];
+    if(!s.employeeSheetId) missing.push({key:"employeeSheetId", label:"Employee sheet"});
+    if(!s.attendanceSheetId) missing.push({key:"attendanceSheetId", label:"Attendance sheet"});
+    if(!s.usersSheetId) missing.push({key:"usersSheetId", label:"Login users sheet"});
+    return missing;
+}
+
+function displaySheetValue(savedValue, builtInValue){
+    return String(savedValue || builtInValue || "").trim();
+}
+
+function updateSheetSetupUI(){
+    const missing = missingSheetFields();
+    const saved = rawSheetSettings();
+    const connected = missing.length === 0;
+    const loginBox = document.getElementById("loginSheetSetup");
+    const appBox = document.getElementById("appSheetSetup");
+    const statusBox = document.getElementById("sheetStatusBox");
+    const statusTitle = document.getElementById("sheetStatusTitle");
+    const statusText = document.getElementById("sheetStatusText");
+    const statusBtn = document.getElementById("sheetStatusBtn");
+
+    if(loginBox) loginBox.classList.toggle("show", missing.length > 0);
+    if(appBox) appBox.classList.toggle("show", missing.length > 0);
+
+    const fill = (id, value) => {
+        const el = document.getElementById(id);
+        if(el && !el.value) el.value = value;
+    };
+
+    fill("loginEmployeeSheet", displaySheetValue(saved.employeeSheetId, BUILT_IN_SHEETS.employeeSheetId));
+    fill("loginAttendanceSheet", displaySheetValue(saved.attendanceSheetId, BUILT_IN_SHEETS.attendanceSheetId));
+    fill("loginUsersSheet", displaySheetValue(saved.usersSheetId, BUILT_IN_SHEETS.usersSheetId));
+    fill("setupEmployeeSheet", displaySheetValue(saved.employeeSheetId, BUILT_IN_SHEETS.employeeSheetId));
+    fill("setupAttendanceSheet", displaySheetValue(saved.attendanceSheetId, BUILT_IN_SHEETS.attendanceSheetId));
+    fill("setupUsersSheet", displaySheetValue(saved.usersSheetId, BUILT_IN_SHEETS.usersSheetId));
+    fill("setupScriptUrl", displaySheetValue(saved.appsScriptUrl, BUILT_IN_SHEETS.appsScriptUrl));
+
+    if(document.getElementById("appSheetSetupText")){
+        document.getElementById("appSheetSetupText").textContent = missing.length
+            ? "Missing: " + missing.map(m => m.label).join(", ") + ". Paste the URL or ID, or set BUILT_IN_SHEETS in the code."
+            : "All 3 sheets are connected.";
+    }
+
+    if(statusBox && statusTitle && statusText){
+        statusBox.classList.toggle("warn", !connected);
+        statusTitle.textContent = connected ? "Sheets connected" : "Sheet links missing";
+        statusText.textContent = connected
+            ? "Employee, Attendance, and Login sheets are set"
+            : missing.map(m => m.label).join(", ") + " not set";
+    }
+    if(statusBtn){
+        statusBtn.textContent = connected ? "Sync Google Sheets" : "Add sheet links";
+        statusBtn.onclick = connected ? syncSheets : () => {
+            document.getElementById("appSheetSetup")?.scrollIntoView({behavior:"smooth", block:"start"});
+        };
+    }
+}
+
+function saveSheetLinks(source){
+    const read = (id) => document.getElementById(id)?.value || "";
+    const current = rawSheetSettings();
+    const employeeSrc = (source === "login" ? read("loginEmployeeSheet") : read("setupEmployeeSheet")) ||
+        read("employeeSheetId") || current.employeeSheetId || BUILT_IN_SHEETS.employeeSheetId;
+    const attendanceSrc = (source === "login" ? read("loginAttendanceSheet") : read("setupAttendanceSheet")) ||
+        read("attendanceSheetId") || current.attendanceSheetId || BUILT_IN_SHEETS.attendanceSheetId;
+    const usersSrc = (source === "login" ? read("loginUsersSheet") : read("setupUsersSheet")) ||
+        read("usersSheetId") || current.usersSheetId || BUILT_IN_SHEETS.usersSheetId;
+    const next = {
+        employeeSheetId: employeeSrc,
+        attendanceSheetId: attendanceSrc,
+        usersSheetId: usersSrc,
+        employeeGid: extractGid(employeeSrc) || current.employeeGid || "",
+        attendanceGid: extractGid(attendanceSrc) || current.attendanceGid || "",
+        usersGid: extractGid(usersSrc) || current.usersGid || "",
+        appsScriptUrl: String(
+            read("setupScriptUrl") || read("appsScriptUrl") || current.appsScriptUrl || BUILT_IN_SHEETS.appsScriptUrl || ""
+        ).trim(),
+        ownerWhatsapp: String(read("ownerWhatsapp") || current.ownerWhatsapp || "").trim()
+    };
+
+    if(!extractSheetId(next.employeeSheetId) || !extractSheetId(next.attendanceSheetId) || !extractSheetId(next.usersSheetId)){
+        alert("Please add all 3 sheet URLs or IDs: Employee, Attendance, and Login users.");
+        return;
+    }
+
+    localStorage.setItem("sheetSettings", JSON.stringify(next));
+    loadSettings();
+    updateSheetSetupUI();
+    toast("All 3 sheet links saved");
+    Promise.all([fetchEmployeesFromSheet(true), fetchUsersFromSheet(true)]);
+}
+
+function parseCsv(text){
+    const rows = [];
+    let row = [];
+    let cell = "";
+    let quoted = false;
+    const src = String(text || "").replace(/^\uFEFF/, "");
+    for(let i = 0; i < src.length; i++){
+        const c = src[i];
+        if(quoted){
+            if(c === '"'){
+                if(src[i + 1] === '"'){ cell += '"'; i++; }
+                else quoted = false;
+            }else cell += c;
+        }else if(c === '"'){
+            quoted = true;
+        }else if(c === ","){
+            row.push(cell);
+            cell = "";
+        }else if(c === "\n" || c === "\r"){
+            if(c === "\r" && src[i + 1] === "\n") i++;
+            row.push(cell);
+            cell = "";
+            if(row.some(v => String(v).trim() !== "")) rows.push(row);
+            row = [];
+        }else{
+            cell += c;
+        }
+    }
+    if(cell || row.length){
+        row.push(cell);
+        if(row.some(v => String(v).trim() !== "")) rows.push(row);
+    }
+    if(!rows.length) return [];
+    let headers = rows[0].map(h => String(h || "").trim());
+    const headerKey = headers.map(h => h.toLowerCase().replace(/[\s_]+/g, "")).join("|");
+    let dataRows = rows.slice(1);
+    const looksLikeHeader = /username|user|login|password|email|role|name|id|mobile/.test(headerKey);
+    if(!looksLikeHeader){
+        headers = USER_SHEET_HEADERS.slice();
+        dataRows = rows;
+    }
+    return dataRows.map(r => {
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = String(r[i] || "").trim(); });
+        return obj;
+    });
+}
+
+function userFromSheetRow(row){
+    const username = pickRow(row, ["username", "user", "login", "user name", "userid"]);
+    const password = pickRow(row, ["password", "pass", "pw", "passwd"]);
+    const role = String(pickRow(row, ["role", "userrole", "type"]) || "employee").toLowerCase();
+    return makeUser({
+        username,
+        password,
+        mobile: pickRow(row, ["mobile", "phone", "whatsapp"]),
+        email: pickRow(row, ["email", "mail"]),
+        role: ["admin","owner","employee"].includes(role) ? role : "employee",
+        employeeId: pickRow(row, ["employeeId", "employeeid", "emp id", "id"]),
+        themeEditedAt: pickRow(row, ["themeEditedAt", "themeeditedat"]),
+        theme: {
+            preset: pickRow(row, ["themePreset", "preset"]) || "custom",
+            buttonColor: pickRow(row, ["buttonColor", "primary", "cta"]),
+            headerColor: pickRow(row, ["headerColor", "header"]),
+            bgColor: pickRow(row, ["bgColor", "bg"]),
+            textColor: pickRow(row, ["textColor", "text"]),
+            sidebarColor: pickRow(row, ["sidebarColor", "sidebar"]),
+            buttonStyle: pickRow(row, ["buttonStyle"])
+        }
+    });
+}
+
+function usersForSheet(){
+    return users.map(u => {
+        const t = cloneTheme(u.theme);
+        return {
+            username: u.username,
+            password: u.password,
+            mobile: u.mobile,
+            email: u.email,
+            role: u.role,
+            employeeId: u.employeeId || "",
+            buttonColor: t.buttonColor,
+            headerColor: t.headerColor,
+            bgColor: t.bgColor,
+            textColor: t.textColor,
+            sidebarColor: t.sidebarColor,
+            buttonStyle: t.buttonStyle,
+            themePreset: t.preset,
+            themeEditedAt: u.themeEditedAt || ""
+        };
+    });
+}
+
+function mergeSheetUsers(rows){
+    const incoming = rows
+        .map(userFromSheetRow)
+        .filter(u => u.username && u.password);
+    if(!incoming.length) return 0;
+    incoming.forEach(next => {
+        const idx = users.findIndex(u => u.username.toLowerCase() === next.username.toLowerCase());
+        if(idx >= 0) users[idx] = Object.assign({}, users[idx], next);
+        else users.push(next);
+    });
+    saveUsers();
+    if(currentUser){
+        const fresh = users.find(u => u.username === currentUser.username);
+        if(fresh){
+            currentUser = fresh;
+            persistCurrentUser();
+            applyTheme(fresh.theme);
+            fillThemeForm(fresh.theme);
+        }
+    }
+    try{
+        renderUsers();
+        renderOwners();
+    }catch(err){ /* login screen does not need these tables */ }
+    return incoming.length;
+}
+
+function pickRow(row, keys){
+    for(const key of keys){
+        if(row[key] != null && String(row[key]).trim() !== "") return String(row[key]).trim();
+        const found = Object.keys(row || {}).find(h => h.toLowerCase().trim() === String(key).toLowerCase());
+        if(found && String(row[found]).trim() !== "") return String(row[found]).trim();
+    }
+    return "";
+}
+
+function employeeFromSheetRow(row){
+    const id = pickRow(row, ["id", "employeeId", "employee_id", "Employee ID"]);
+    if(!id) return null;
+    return {
+        id,
+        name: pickRow(row, ["name", "employeeName", "Employee Name"]),
+        mobile: pickRow(row, ["mobile", "phone", "Mobile"]),
+        joining: pickRow(row, ["joining", "date_joining", "joiningDate", "Date Joining"]),
+        role: pickRow(row, ["role", "Role"]),
+        team: pickRow(row, ["team", "Team"]),
+        leader: pickRow(row, ["leader", "teamLeader", "Team Leader"]),
+        gender: pickRow(row, ["gender", "Gender"]),
+        company: pickRow(row, ["company", "Company"]),
+        project: pickRow(row, ["project", "Project"]),
+        type: pickRow(row, ["type", "employmentType", "Employment Type"]) || "Full Time",
+        status: pickRow(row, ["status", "Status"]) || "Active",
+        email: pickRow(row, ["email", "Email"]),
+        emergency: pickRow(row, ["emergency", "Emergency"]),
+        address: pickRow(row, ["address", "Address"]),
+        remarks: pickRow(row, ["remarks", "Remarks"]),
+        latitude: pickRow(row, ["latitude", "lat", "Latitude"]),
+        longitude: pickRow(row, ["longitude", "lng", "long", "Longitude"]),
+        is_approved: normalizeApproval(pickRow(row, ["is_approved", "isApproved", "approved"]), "Pending")
+    };
+}
+
+function mergeSheetEmployees(rows){
+    const incoming = rows.map(employeeFromSheetRow).filter(Boolean);
+    if(!incoming.length) return 0;
+    incoming.forEach(next => {
+        const idx = employees.findIndex(e => e.id.toLowerCase() === next.id.toLowerCase());
+        if(idx >= 0) employees[idx] = Object.assign({}, employees[idx], next);
+        else employees.push(next);
+    });
+    saveEmployees();
+    renderEmployees();
+    updateDashboard();
+    updateEmployeeFilters();
+    return incoming.length;
+}
+
+async function fetchCsvFromSheet(sheetId, gid){
+    const gidQuery = gid ? "gid=" + encodeURIComponent(gid) : "";
+    const urls = [
+        "https://docs.google.com/spreadsheets/d/" + sheetId + "/gviz/tq?tqx=out:csv" + (gidQuery ? "&" + gidQuery : ""),
+        "https://docs.google.com/spreadsheets/d/" + sheetId + "/export?format=csv" + (gidQuery ? "&" + gidQuery : "")
+    ];
+    let lastError = null;
+    for(const url of urls){
+        try{
+            const res = await fetch(url, {cache: "no-store"});
+            if(!res.ok) throw new Error("HTTP " + res.status);
+            const text = await res.text();
+            if(/<!DOCTYPE html>/i.test(text)) throw new Error("Sheet is not public");
+            const rows = parseCsv(text);
+            if(rows.length) return rows;
+        }catch(err){
+            lastError = err;
+        }
+    }
+    try{
+        return await fetchGvizJsonp(sheetId, gid);
+    }catch(err){
+        throw lastError || err;
+    }
+}
+
+function gvizTableToRows(table){
+    const headers = (table.cols || []).map(c => String(c.label || c.id || "").trim());
+    return (table.rows || []).map(row => {
+        const obj = {};
+        headers.forEach((h, i) => {
+            const cell = row.c && row.c[i];
+            let val = "";
+            if(cell){
+                if(cell.f != null && cell.f !== "") val = cell.f;
+                else if(cell.v != null) val = cell.v;
+            }
+            obj[h] = String(val).trim();
+        });
+        return obj;
+    });
+}
+
+function fetchGvizJsonp(sheetId, gid){
+    return new Promise((resolve, reject)=>{
+        const name = "tappedGviz_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
+        const script = document.createElement("script");
+        const timer = setTimeout(()=>{
+            cleanup();
+            reject(new Error("timeout"));
+        }, 12000);
+        function cleanup(){
+            clearTimeout(timer);
+            try{ delete window[name]; }catch(e){ window[name] = undefined; }
+            if(script.parentNode) script.parentNode.removeChild(script);
+        }
+        window[name] = function(payload){
+            cleanup();
+            if(!payload || payload.status !== "ok" || !payload.table){
+                reject(new Error("gviz failed"));
+                return;
+            }
+            resolve(gvizTableToRows(payload.table));
+        };
+        script.onerror = function(){
+            cleanup();
+            reject(new Error("Could not load sheet"));
+        };
+        script.src = "https://docs.google.com/spreadsheets/d/" + sheetId +
+            "/gviz/tq?tqx=out:json;responseHandler:" + name +
+            (gid ? "&gid=" + encodeURIComponent(gid) : "");
+        document.head.appendChild(script);
+    });
+}
+
+async function fetchUsersFromSheet(silent){
+    const settings = sheetSettings();
+    const scriptUrl = (settings.appsScriptUrl || "").trim();
+    const sheetId = (settings.usersSheetId || "").trim();
+    if(!scriptUrl && !sheetId) return 0;
+
+    const work = (async ()=>{
+        if(scriptUrl){
+            const url = scriptUrl + (scriptUrl.includes("?") ? "&" : "?") + "action=getUsers";
+            const res = await fetch(url, {cache: "no-store"});
+            if(res.ok){
+                const data = await res.json();
+                const rows = Array.isArray(data) ? data : (data.users || data.rows || []);
+                if(rows.length) return mergeSheetUsers(rows);
+            }
+        }
+        if(sheetId){
+            const rows = await fetchCsvFromSheet(sheetId, settings.usersGid);
+            return mergeSheetUsers(rows);
+        }
+        return 0;
+    })();
+
+    try{
+        return await Promise.race([
+            work,
+            new Promise((_, reject)=>setTimeout(()=>reject(new Error("timeout")), 15000))
+        ]);
+    }catch(err){
+        if(!silent){
+            toast("Could not fetch login sheet. Publish it as Anyone with the link, or add Apps Script URL.", "error");
+        }
+        return 0;
+    }
+}
+
+async function fetchEmployeesFromSheet(silent){
+    const settings = sheetSettings();
+    const scriptUrl = (settings.appsScriptUrl || "").trim();
+    const sheetId = (settings.employeeSheetId || "").trim();
+    if(!scriptUrl && !sheetId) return 0;
+
+    const work = (async ()=>{
+        if(scriptUrl){
+            const url = scriptUrl + (scriptUrl.includes("?") ? "&" : "?") + "action=getEmployees";
+            const res = await fetch(url, {cache: "no-store"});
+            if(res.ok){
+                const data = await res.json();
+                const rows = Array.isArray(data) ? data : (data.employees || data.rows || []);
+                if(rows.length) return mergeSheetEmployees(rows);
+            }
+        }
+        if(sheetId){
+            const rows = await fetchCsvFromSheet(sheetId, settings.employeeGid);
+            return mergeSheetEmployees(rows);
+        }
+        return 0;
+    })();
+
+    try{
+        return await Promise.race([
+            work,
+            new Promise((_, reject)=>setTimeout(()=>reject(new Error("timeout")), 8000))
+        ]);
+    }catch(err){
+        if(!silent){
+            toast("Could not fetch employee sheet. Share it as Anyone with the link can view.", "error");
+        }
+        return 0;
+    }
+}
+
+async function pushUsersToSheet(){
+    const settings = sheetSettings();
+    const scriptUrl = (settings.appsScriptUrl || "").trim();
+    if(!scriptUrl) return;
+    try{
+        await fetch(scriptUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {"Content-Type": "text/plain"},
+            body: JSON.stringify({action: "saveUsers", users: usersForSheet()})
+        });
+    }catch(err){
+        /* local save already succeeded */
+    }
+}
+
+async function syncSheets(){
+    if(missingSheetFields().length){
+        updateSheetSetupUI();
+        document.getElementById("appSheetSetup")?.scrollIntoView({behavior:"smooth", block:"start"});
+        toast("Add all 3 sheet links first", "error");
+        return;
+    }
+    saveSettings();
+    toast("Syncing employees and login sheet…");
+    const [empCount, userCount] = await Promise.all([
+        fetchEmployeesFromSheet(false),
+        fetchUsersFromSheet(true)
+    ]);
+    if(empCount || userCount){
+        toast("Synced " + empCount + " employee(s) and " + userCount + " login user(s)");
+        renderApprovals();
+        renderAttendance();
+    }else if(!sheetSettings().employeeSheetId && !sheetSettings().usersSheetId && !sheetSettings().appsScriptUrl){
+        toast("Add Employee / Login sheet IDs in Settings first", "error");
+    }
+}
+
+function saveSettings(){
+    const current = rawSheetSettings();
+    const settings = {
+        employeeSheetId: extractSheetId(document.getElementById("employeeSheetId").value || current.employeeSheetId || BUILT_IN_SHEETS.employeeSheetId),
+        attendanceSheetId: extractSheetId(document.getElementById("attendanceSheetId").value || current.attendanceSheetId || BUILT_IN_SHEETS.attendanceSheetId),
+        usersSheetId: extractSheetId(document.getElementById("usersSheetId").value || current.usersSheetId || BUILT_IN_SHEETS.usersSheetId),
+        ownerWhatsapp: document.getElementById("ownerWhatsapp").value.trim(),
+        appsScriptUrl: document.getElementById("appsScriptUrl").value.trim() || current.appsScriptUrl || BUILT_IN_SHEETS.appsScriptUrl
+    };
+    localStorage.setItem("sheetSettings", JSON.stringify(settings));
+    updateSheetSetupUI();
+    toast("Settings saved");
+}
+
+function loadSettings(){
+    const settings = sheetSettings();
+    const saved = rawSheetSettings();
+    const setVal = (id, value) => {
+        const el = document.getElementById(id);
+        if(el) el.value = value || "";
+    };
+    setVal("employeeSheetId", displaySheetValue(saved.employeeSheetId, BUILT_IN_SHEETS.employeeSheetId));
+    setVal("attendanceSheetId", displaySheetValue(saved.attendanceSheetId, BUILT_IN_SHEETS.attendanceSheetId));
+    setVal("usersSheetId", displaySheetValue(saved.usersSheetId, BUILT_IN_SHEETS.usersSheetId));
+    setVal("ownerWhatsapp", settings.ownerWhatsapp);
+    setVal("appsScriptUrl", displaySheetValue(saved.appsScriptUrl, BUILT_IN_SHEETS.appsScriptUrl));
+    updateSheetSetupUI();
+}
+
+function getOwnerWhatsapp(){
+    const settings = JSON.parse(localStorage.getItem("sheetSettings") || "{}");
+    let num = String(settings.ownerWhatsapp || document.getElementById("ownerWhatsapp")?.value || "").replace(/\D/g, "");
+    if(num.length === 10) num = "91" + num;
+    return num;
+}
+
+function sendWhatsAppToOwner(text){
+    const number = getOwnerWhatsapp();
+    if(!number){
+        toast("Add an owner WhatsApp number in Settings first", "error");
+        return false;
+    }
+    window.open("https://wa.me/" + number + "?text=" + encodeURIComponent(text), "_blank");
+    return true;
+}
+
+function loginAlertMessage(user){
+    const now = new Date();
+    return [
+        "Tapped Login",
+        "Username: " + user.username,
+        "Mobile: " + user.mobile,
+        "Email: " + user.email,
+        "Role: " + (user.role || "admin"),
+        "Date: " + now.toLocaleDateString("en-IN"),
+        "Time: " + now.toLocaleTimeString("en-IN")
+    ].join("\n");
+}
+
+function makeUser(data){
+    return {
+        username: data.username,
+        password: data.password,
+        mobile: data.mobile,
+        email: data.email,
+        role: data.role,
+        employeeId: data.employeeId || "",
+        theme: cloneTheme(data.theme || DEFAULT_THEME),
+        themeEditedAt: data.themeEditedAt || ""
+    };
+}
+
+function ensureEmployeeLogin(employee){
+    if(users.some(u=>u.employeeId === employee.id || u.username.toLowerCase() === employee.id.toLowerCase())) return;
+    users.push(makeUser({
+        username: employee.id.toLowerCase(),
+        password: String(employee.mobile).slice(-4) || "emp123",
+        mobile: employee.mobile,
+        email: employee.email || "",
+        role: "employee",
+        employeeId: employee.id
+    }));
+    saveUsers();
+}
+
+function addLoginUser(){
+    if(!isStaff()){
+        toast("You cannot add users", "error");
+        return;
+    }
+    const username = document.getElementById("newUserName").value.trim();
+    const password = document.getElementById("newUserPass").value;
+    const mobile = document.getElementById("newUserMobile").value.trim();
+    const email = document.getElementById("newUserEmail").value.trim();
+    const role = document.getElementById("newUserRole").value;
+    const employeeId = document.getElementById("newUserEmpId").value.trim();
+
+    if(!username || !password || !mobile || !email){
+        alert("Username, password, mobile and email are required.");
+        return;
+    }
+    if(!/^[0-9]{10}$/.test(mobile)){
+        alert("Enter a valid 10 digit mobile number.");
+        return;
+    }
+    if(role === "owner" && !isAdmin()){
+        alert("Owner cannot create another owner. Ask an admin.");
+        return;
+    }
+    if(users.some(u=>u.username.toLowerCase() === username.toLowerCase())){
+        alert("Username already exists.");
+        return;
+    }
+
+    users.push(makeUser({username, password, mobile, email, role, employeeId}));
+    saveUsers();
+    renderUsers();
+    renderOwners();
+    document.getElementById("newUserName").value = "";
+    document.getElementById("newUserPass").value = "";
+    document.getElementById("newUserMobile").value = "";
+    document.getElementById("newUserEmail").value = "";
+    document.getElementById("newUserEmpId").value = "";
+    toast(role.charAt(0).toUpperCase() + role.slice(1) + " user added");
+    pushUsersToSheet();
+}
+
+function addAdminUser(){ addLoginUser(); }
+
+function addOwnerUser(){
+    if(!isAdmin()){
+        toast("Only admin can create an owner", "error");
+        return;
+    }
+    const username = document.getElementById("newOwnerName").value.trim();
+    const password = document.getElementById("newOwnerPass").value;
+    const mobile = document.getElementById("newOwnerMobile").value.trim();
+    const email = document.getElementById("newOwnerEmail").value.trim();
+
+    if(!username || !password || !mobile || !email){
+        alert("Username, password, mobile and email are required.");
+        return;
+    }
+    if(!/^[0-9]{10}$/.test(mobile)){
+        alert("Enter a valid 10 digit mobile number.");
+        return;
+    }
+    if(users.some(u=>u.username.toLowerCase() === username.toLowerCase())){
+        alert("Username already exists.");
+        return;
+    }
+
+    users.push(makeUser({username, password, mobile, email, role:"owner"}));
+    saveUsers();
+    renderOwners();
+    renderUsers();
+    document.getElementById("newOwnerName").value = "";
+    document.getElementById("newOwnerPass").value = "";
+    document.getElementById("newOwnerMobile").value = "";
+    document.getElementById("newOwnerEmail").value = "";
+    toast("Owner user added");
+    pushUsersToSheet();
+    pushUsersToSheet();
+}
+
+function canDeleteUser(user){
+    if(!currentUser) return false;
+    if(user.username === currentUser.username) return false;
+    if(user.role === "owner" && !isAdmin()) return false;
+    if(user.role === "admin" && users.filter(u=>u.role === "admin").length < 2) return false;
+    return isStaff();
+}
+
+function deleteLoginUser(index){
+    const user = users[index];
+    if(!user) return;
+    if(!canDeleteUser(user)){
+        toast("You cannot remove this user", "error");
+        return;
+    }
+    if(!confirm("Remove login for " + user.username + "?")) return;
+    users.splice(index, 1);
+    saveUsers();
+    renderUsers();
+    renderOwners();
+    pushUsersToSheet();
+}
+
+function deleteAdminUser(index){ deleteLoginUser(index); }
+
+function themeLabel(user){
+    const t = cloneTheme(user.theme);
+    return (t.buttonStyle || "rounded") + " · " + t.buttonColor;
+}
+
+function renderUsers(){
+    const tbody = document.getElementById("usersTable");
+    if(!tbody) return;
+    tbody.innerHTML = users.map((u, index)=>`
+        <tr>
+            <td><strong>${u.username}</strong></td>
+            <td>${u.password}</td>
+            <td>${u.mobile}</td>
+            <td>${u.email}</td>
+            <td><span class="badge ${u.role === "admin" ? "badge-purple" : u.role === "owner" ? "badge-orange" : "badge-blue"}">${u.role || "employee"}</span></td>
+            <td>${u.employeeId || "-"}</td>
+            <td>${themeLabel(u)}</td>
+            <td>${canDeleteUser(u) ? `<button class="btn btn-danger btn-sm" onclick="deleteLoginUser(${index})">Delete</button>` : "-"}</td>
+        </tr>
+    `).join("") || `<tr><td colspan="8"><div class="empty"><strong>No users</strong></div></td></tr>`;
+}
+
+function renderOwners(){
+    const tbody = document.getElementById("ownersTable");
+    if(!tbody) return;
+    const owners = users.map((u, index)=>({u, index})).filter(item=>item.u.role === "owner");
+    if(!owners.length){
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><strong>No owners yet</strong>Admin can add an owner login here.</div></td></tr>`;
+        return;
+    }
+    tbody.innerHTML = owners.map(({u, index})=>`
+        <tr>
+            <td><strong>${u.username}</strong></td>
+            <td>${u.password}</td>
+            <td>${u.mobile}</td>
+            <td>${u.email}</td>
+            <td>${themeLabel(u)}</td>
+            <td>${isAdmin() ? `<button class="btn btn-danger btn-sm" onclick="deleteLoginUser(${index})">Delete</button>` : "-"}</td>
+        </tr>
+    `).join("");
+}
+
+function exportUsers(){
+    downloadCSV(usersForSheet(), "login-users.csv");
+}
+
+function exportOwners(){
+    const owners = usersForSheet().filter(u => String(u.role || "").toLowerCase() === "owner");
+    if(!owners.length){
+        alert("No owner users to export.");
+        return;
+    }
+    downloadCSV(owners, "owners-sheet.csv");
+}
+
+function restoreSession(){
+    try{
+        const saved = JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("tappedSession") || "null");
+        if(!saved || !saved.username) return false;
+        const user = users.find(u=>u.username === saved.username);
+        if(!user) return false;
+        currentUser = user;
+        persistCurrentUser();
+        return true;
+    }catch(e){
+        return false;
+    }
+}
+
+function decodeAttendanceCode(){
+    const box = document.getElementById("decodeResult");
+    const parsed = decodePunchCode(document.getElementById("decodeCode").value);
+
+    if(!parsed){
+        box.className = "decoder-result show";
+        box.innerHTML = `<div class="empty"><strong>Invalid code</strong>Paste a 15-character punch code.</div>`;
+        return;
+    }
+
+    const employee = employees.find(e=>
+        empIdCode(e.id) === parsed.empNum && empNameCode(e.name) === parsed.name3
+    ) || employees.find(e=>empIdCode(e.id) === parsed.empNum);
+
+    const hourPad = String(parsed.hour).padStart(2, "0");
+    const raw = document.getElementById("decodeCode").value.replace(/\s/g, "").toUpperCase();
+    const match = attendance.find(a=>{
+        if(parsed.typeCode === "O") return a.punchCodeOut && a.punchCodeOut.toUpperCase() === raw;
+        return a.punchCodeIn && a.punchCodeIn.toUpperCase() === raw;
+    }) || attendance.find(a=>{
+        const sameEmp = employee ? a.employeeId === employee.id : empIdCode(a.employeeId) === parsed.empNum;
+        const sameDay = Number(String(a.date).slice(-2)) === parsed.day;
+        return sameEmp && sameDay;
+    });
+
+    const punchTime = match
+        ? (parsed.typeCode === "O" ? match.punchOut : match.punchIn)
+        : hourPad + ":00";
+
+    box.className = "decoder-result show";
+    box.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+                <strong>${parsed.type}</strong>
+                <div class="punch-code" style="margin-top:6px;">${raw}</div>
+            </div>
+            ${match ? approvalBadge(match.is_approved) : `<span class="badge badge-gray">No saved record</span>`}
+        </div>
+        <div class="decoder-grid">
+            <div><span>Employee ID</span>${employee ? employee.id : "EMP" + parsed.empNum}</div>
+            <div><span>Name</span>${employee ? employee.name : parsed.name3}</div>
+            <div><span>Name code</span>${parsed.name3}</div>
+            <div><span>Punch type</span>${parsed.type} · ${parsed.hour < 12 ? "Morning" : "Evening"}</div>
+            <div><span>Latitude</span>${employee?.latitude || parsed.lat}</div>
+            <div><span>Longitude</span>${employee?.longitude || parsed.lng}</div>
+            <div><span>Date</span>${match ? formatDate(match.date) : "Day " + parsed.day}</div>
+            <div><span>Time</span>${punchTime ? formatTime(punchTime) : hourPad + ":00"}</div>
+            <div><span>Attendance status</span>${match ? match.status : "Not found"}</div>
+            <div><span>Regularized</span>${match ? match.regularized : "-"}</div>
+            <div><span>Approval</span>${match ? match.is_approved : "-"}</div>
+            <div><span>Location code</span>${parsed.lat}, ${parsed.lng}</div>
+        </div>
+    `;
+}
+
+document.addEventListener("keydown", e=>{
+    if(e.key === "Escape"){
+        document.querySelectorAll(".modal.show").forEach(m=>m.classList.remove("show"));
+        closeSidebar();
+    }
+});
+
+document.querySelectorAll(".modal").forEach(modal=>{
+    modal.addEventListener("click", e=>{
+        if(e.target === modal) modal.classList.remove("show");
+    });
+});
+
+function init(){
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("attendanceDate").value = today;
+    loadSettings();
+    updateSheetSetupUI();
+    applyTheme(DEFAULT_THEME);
+    setLoginRole("employee", document.querySelector("#loginRoleTabs .tab-btn"));
+    ["loginUser", "loginPass"].forEach(id=>{
+        document.getElementById(id).addEventListener("keydown", e=>{
+            if(e.key === "Enter") loginUser();
+        });
+    });
+    const decode = document.getElementById("decodeCode");
+    if(decode){
+        decode.addEventListener("keydown", e=>{
+            if(e.key === "Enter") decodeAttendanceCode();
+        });
+    }
+    if(restoreSession()){
+        enterApp();
+        Promise.all([fetchEmployeesFromSheet(true), fetchUsersFromSheet(true)]);
+    }
+}
+
+init();
+</script>
+</body>
+</html>
