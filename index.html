@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -704,24 +705,123 @@ body.btn-square .login-card{border-radius:6px;}
     color:#B45309;
 }
 
+.ad-overlay{
+    position:fixed;
+    inset:0;
+    z-index:1200;
+    display:none;
+    place-items:center;
+    padding:24px;
+    background:rgba(15,23,42,.96);
+    color:#fff;
+}
+.ad-overlay.show{display:grid;}
+.ad-overlay-card{width:min(760px,100%);text-align:center;}
+.ad-overlay-frame{
+    min-height:280px;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    border-radius:18px;
+    background:#1E293B;
+    border:1px solid rgba(255,255,255,.18);
+    position:relative;
+}
+.ad-overlay-frame img{
+    display:block;
+    width:100%;
+    max-height:60vh;
+    object-fit:contain;
+    opacity:1;
+    transition:opacity .35s ease;
+}
+.ad-overlay-frame img.is-fading,
+.header-ad img.is-fading{opacity:0;}
+.ad-dots, .header-ad-dots{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    margin-top:10px;
+}
+.ad-dot{
+    width:8px;height:8px;
+    border-radius:50%;
+    border:0;
+    background:rgba(255,255,255,.35);
+    cursor:pointer;
+    padding:0;
+}
+.ad-dot.active{background:#fff;}
+.header-ad-dots .ad-dot{background:#CBD5E1;}
+.header-ad-dots .ad-dot.active{background:var(--primary);}
+.ad-overlay-card h2{margin-top:18px;font-size:20px;}
+.ad-overlay-card p{margin:8px 0 16px;color:#CBD5E1;}
+.header-ad{
+    display:none;
+    margin:16px 24px 0;
+    min-height:96px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    overflow:hidden;
+    background:var(--surface);
+    box-shadow:var(--shadow);
+    position:relative;
+}
+.header-ad.show{display:block;}
+.header-ad img{display:block;width:100%;height:clamp(96px,14vw,180px);object-fit:cover;transition:opacity .35s ease;}
+.header-ad-label{position:absolute;top:8px;right:8px;background:rgba(15,23,42,.78);color:#fff;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:700;}
+.switch-row{display:flex;align-items:center;gap:9px;min-height:40px;}
+.switch-row input{width:18px;height:18px;}
+.not-working-row td{background:#FFF7ED;}
+
 .login-sheet-setup{
     margin-top:18px;
     text-align:left;
 }
 
-[data-roles]{ }
 body.role-employee .only-staff,
 body.role-owner .only-admin,
 body.role-employee .only-admin{display:none !important;}
+.only-manager{display:none !important;}
+body.role-owner .only-manager,
+body.role-admin .only-manager,
+body.team-head .only-manager{display:flex !important;}
+body.team-head li.only-manager{display:list-item !important;}
+th.tl-col, td.tl-col{display:none;}
+body.role-owner th.tl-col,
+body.role-admin th.tl-col,
+body.team-head th.tl-col,
+body.role-owner td.tl-col,
+body.role-admin td.tl-col,
+body.team-head td.tl-col{display:table-cell !important;}
+body.team-head .filters.only-staff{display:flex !important;}
+.only-creator{display:none !important;}
+body.role-owner .only-creator,
+body.role-admin .only-creator,
+body.can-create-employee .only-creator{display:inline-flex !important;}
 .only-employee{display:none !important;}
 body.role-employee .only-employee{display:block !important;}
 body.role-employee button.only-employee,
 body.role-employee .quick-action.only-employee{display:block !important;}
 body.role-employee .punch-row.only-employee{display:flex !important;}
 body.role-employee .btn.only-employee{display:inline-flex !important;}
+@media (max-width:600px){
+    .header-ad{margin:12px 14px 0;}
+    .ad-overlay-frame{min-height:200px;}
+}
 </style>
 </head>
 <body>
+
+<div class="ad-overlay" id="adOverlay" role="dialog" aria-modal="true" aria-labelledby="adOverlayTitle">
+    <div class="ad-overlay-card">
+        <div class="ad-overlay-frame" id="adOverlayFrame"></div>
+        <div class="ad-dots" id="adOverlayDots" hidden></div>
+        <h2 id="adOverlayTitle">A short message from our sponsor</h2>
+        <p id="adCountdown" aria-live="polite">Wait 5 seconds, then tap Skip.</p>
+        <button class="btn btn-primary" id="adSkipBtn" type="button" disabled onclick="closeAdOverlay()">Skip (5)</button>
+    </div>
+</div>
 
 <div class="login-screen" id="loginScreen">
     <div class="login-card">
@@ -755,7 +855,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
             <p>Sheet URLs are not set in the code. Paste all 3 below, or add them in <code>BUILT_IN_SHEETS</code>.</p>
             <div class="form-grid" style="grid-template-columns:1fr;">
                 <div class="form-group">
-                    <label>Employee sheet URL or ID</label>
+                    <label>Employee data sheet URL or ID</label>
                     <input id="loginEmployeeSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
                 </div>
                 <div class="form-group">
@@ -763,7 +863,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                     <input id="loginAttendanceSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
                 </div>
                 <div class="form-group">
-                    <label>Login users sheet URL or ID</label>
+                    <label>Login accounts sheet URL or ID (not employee data)</label>
                     <input id="loginUsersSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
                 </div>
             </div>
@@ -801,7 +901,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                 Attendance
             </button>
         </li>
-        <li class="only-staff">
+        <li class="only-manager">
             <button onclick="showPage('approvals',this)">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 Approvals
@@ -858,6 +958,12 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
     </div>
 </header>
 
+<div class="header-ad" id="headerAdBanner" aria-label="Advertisement">
+    <span class="header-ad-label">Advertisement</span>
+    <img id="headerAdImage" alt="Sponsored banner">
+    <div class="header-ad-dots" id="headerAdDots" hidden></div>
+</div>
+
 <div class="content">
 
 <div class="sheet-setup" id="appSheetSetup">
@@ -865,7 +971,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
     <p id="appSheetSetupText">One or more sheet URLs are missing. Paste them here, or set them in <code>BUILT_IN_SHEETS</code> in the code.</p>
     <div class="form-grid">
         <div class="form-group">
-            <label>Employee sheet URL or ID</label>
+            <label>Employee data sheet URL or ID</label>
             <input id="setupEmployeeSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
         </div>
         <div class="form-group">
@@ -873,7 +979,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
             <input id="setupAttendanceSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
         </div>
         <div class="form-group">
-            <label>Login users sheet URL or ID</label>
+            <label>Login accounts sheet URL or ID (not employee data)</label>
             <input id="setupUsersSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
         </div>
         <div class="form-group">
@@ -943,14 +1049,14 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                 </div>
             </div>
             <div class="quick-actions">
-                <button class="quick-action only-staff" onclick="openEmployeeModal()">
+                <button class="quick-action only-creator" onclick="openEmployeeModal()">
                     <strong>
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                         Add Employee
                     </strong>
                     <span>New hire waits for owner approval</span>
                 </button>
-                <button class="quick-action only-staff" onclick="showPageByName('attendance')">
+                <button class="quick-action only-manager" onclick="showPageByName('attendance')">
                     <strong>
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                         Mark Attendance
@@ -964,7 +1070,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                     </strong>
                     <span>Send a missed punch for owner review</span>
                 </button>
-                <button class="quick-action only-staff" onclick="showPageByName('approvals')">
+                <button class="quick-action only-manager" onclick="showPageByName('approvals')">
                     <strong>
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
                         Review Approvals
@@ -996,7 +1102,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
         </div>
 
         <div>
-            <div class="panel only-staff">
+            <div class="panel only-manager">
                 <div class="panel-header">
                     <div class="panel-title">Needs your approval</div>
                 </div>
@@ -1046,7 +1152,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                 <div class="panel-title" id="employeesPanelTitle">Employees</div>
                 <small id="employeesPanelSub">Owner must approve each person before they can mark attendance</small>
             </div>
-            <button class="btn btn-primary only-staff" onclick="openEmployeeModal()">
+            <button class="btn btn-primary only-creator" onclick="openEmployeeModal()">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                 Add Employee
             </button>
@@ -1062,6 +1168,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                 <option value="">All Status</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
+                <option value="Not Working">Not Working</option>
             </select>
             <select id="employeeApprovalFilter" onchange="renderEmployees()">
                 <option value="">All Approvals</option>
@@ -1077,6 +1184,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                     <tr>
                         <th>Employee ID</th>
                         <th>Name</th>
+                        <th>Password</th>
                         <th>Mobile</th>
                         <th>Date Joining</th>
                         <th>Role</th>
@@ -1088,7 +1196,11 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                         <th>Latitude</th>
                         <th>Longitude</th>
                         <th>Status</th>
+                        <th>Work Status</th>
+                        <th>Created By</th>
                         <th>is_approved</th>
+                        <th class="tl-col">Make Attendance</th>
+                        <th class="tl-col">Approve</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -1126,7 +1238,8 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn btn-secondary" onclick="openRegularizeModal()">Apply Regularize</button>
-                <button class="btn btn-primary only-staff" onclick="openAttendanceModal()">Mark Attendance</button>
+                <button class="btn btn-primary only-manager" onclick="openAttendanceModal()">Mark Attendance</button>
+                <button class="btn btn-success only-manager" id="batchAttendanceBtn" onclick="markTeamAttendanceBatch()">Mark Team Present</button>
             </div>
         </div>
 
@@ -1211,8 +1324,8 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
     <div class="panel">
         <div class="panel-header">
             <div>
-                <div class="panel-title">Owner approvals</div>
-                <small>Review new employees and regularize applications</small>
+                <div class="panel-title" id="approvalsTitle">Attendance approvals</div>
+                <small id="approvalsSub">Owners review all employees; Team Heads review only their team.</small>
             </div>
         </div>
 
@@ -1276,7 +1389,7 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
         <div class="panel-header">
             <div>
                 <div class="panel-title">Add owner</div>
-                <small>Only admin can create owner login users. Owners cannot create other owners.</small>
+                <small>Admin-only owner sheet. Create owners with their own Google Sheets. Not shown on owner or employee login.</small>
             </div>
         </div>
         <div class="form-grid">
@@ -1296,20 +1409,50 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                 <label>Email *</label>
                 <input id="newOwnerEmail" type="email" placeholder="owner@company.com">
             </div>
+            <div class="form-group">
+                <label>Employee data sheet URL or ID *</label>
+                <input id="newOwnerEmployeeSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+            </div>
+            <div class="form-group">
+                <label>Attendance sheet URL or ID *</label>
+                <input id="newOwnerAttendanceSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+            </div>
+            <div class="form-group">
+                <label>Login accounts sheet URL or ID (optional)</label>
+                <input id="newOwnerUsersSheet" placeholder="Leave blank to use Owners sheet">
+            </div>
+            <div class="form-group">
+                <label>Owner WhatsApp (optional)</label>
+                <input id="newOwnerWhatsapp" placeholder="919876543210 or 9876543210">
+            </div>
+            <div class="form-group">
+                <label>Subscription</label>
+                <label class="switch-row"><input id="newOwnerIsPaid" type="checkbox"> Paid account (hide ads)</label>
+            </div>
+            <div class="form-group full">
+                <label>Ad image URLs</label>
+                <textarea id="newOwnerAdLinks" placeholder="One image URL per line, comma-separated, or JSON array"></textarea>
+            </div>
         </div>
         <br>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+            Each owner needs their own 3 Google Sheets. That owner's employees and attendance are saved only into those sheets.
+        </p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-primary" onclick="addOwnerUser()">Add owner user</button>
             <button class="btn btn-secondary" onclick="exportOwners()">Export owner sheet</button>
         </div>
         <div class="table-wrapper" style="margin-top:16px;">
-            <table style="min-width:720px;">
+            <table style="min-width:920px;">
                 <thead>
                     <tr>
                         <th>Username</th>
                         <th>Password</th>
                         <th>Mobile</th>
                         <th>Email</th>
+                        <th>Subscription</th>
+                        <th>Ad Links</th>
+                        <th>Sheets</th>
                         <th>Theme</th>
                         <th>Action</th>
                     </tr>
@@ -1367,55 +1510,58 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
         <button class="btn btn-primary" id="saveThemeBtn" onclick="saveCurrentTheme()">Save appearance</button>
     </div>
 
-    <div class="panel">
+    <div class="panel only-admin">
         <div class="panel-header">
             <div>
                 <div class="panel-title">Google Sheets Settings</div>
-                <small>Employee sheet uses your columns: id, name, mobile, joining, role, team, leader, gender, company, project, type, status, email, emergency, address, remarks, latitude, longitude, is_approved</small>
+                <small id="sheetsSettingsSub">Admin: default sheets. Owner: your own 3 sheets (employees + attendance go here).</small>
             </div>
         </div>
         <div class="form-grid">
             <div class="form-group">
-                <label>Employee Google Sheet URL or ID</label>
+                <label>Employee data sheet URL or ID (default / admin)</label>
                 <input id="employeeSheetId" placeholder="Paste sheet URL or ID">
             </div>
             <div class="form-group">
-                <label>Attendance Google Sheet URL or ID</label>
+                <label>Attendance sheet URL or ID (default / admin)</label>
                 <input id="attendanceSheetId" placeholder="Paste sheet URL or ID">
             </div>
             <div class="form-group">
-                <label>Login Users Google Sheet URL or ID</label>
-                <input id="usersSheetId" placeholder="Paste sheet URL or ID">
+                <label>Owners sheet URL or ID *</label>
+                <input id="usersSheetId" placeholder="https://docs.google.com/spreadsheets/d/...">
             </div>
             <div class="form-group">
                 <label>Owner WhatsApp number</label>
                 <input id="ownerWhatsapp" placeholder="919876543210 or 9876543210">
             </div>
             <div class="form-group full">
-                <label>Google Apps Script API URL</label>
-                <input id="appsScriptUrl" placeholder="https://script.google.com/macros/s/...">
+                <label>Google Apps Script API URL (required to save into Google Sheets)</label>
+                <input id="appsScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
             </div>
         </div>
         <br>
         <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
-            Employee sheet headers: <strong>id</strong>, <strong>name</strong>, <strong>mobile</strong>, <strong>joining</strong>, <strong>role</strong>, <strong>team</strong>, <strong>leader</strong>, <strong>gender</strong>, <strong>company</strong>, <strong>project</strong>, <strong>type</strong>, <strong>status</strong>, <strong>email</strong>, <strong>emergency</strong>, <strong>address</strong>, <strong>remarks</strong>, <strong>latitude</strong>, <strong>longitude</strong>, <strong>is_approved</strong>.<br>
-            Attendance sheet: <strong>is_approved</strong>, <strong>punchCodeIn</strong>, <strong>punchCodeOut</strong>.<br>
-            Login sheet: <strong>username</strong>, <strong>password</strong>, <strong>mobile</strong>, <strong>email</strong>, <strong>role</strong>, <strong>employeeId</strong>, plus theme color columns.<br>
-            Share sheets as <strong>Anyone with the link can view</strong>, then Sync. Sync loads employees and login users from Google Sheets.<br>
-            Employee can only edit own data and apply regularize. Owner can do everything except create owners. Admin can create owners.
+            Put your <strong>Owners sheet</strong> URL below. Each owner row must have <strong>employee sheet</strong> and <strong>attendance sheet</strong> columns filled with that owner’s sheet links.<br>
+            On owner login, the app loads employees + attendance <strong>only</strong> from those linked sheets.<br>
+            Owners sheet: https://docs.google.com/spreadsheets/d/1-VAqILVkSmEobrbcHpIV6ZXOYKRyT_jCgFaGR3rKVJ8/edit?gid=1485390356#gid=1485390356<br>
+            1. Open <a href="https://script.google.com" target="_blank" rel="noopener">script.google.com</a> → New project.<br>
+            2. Click <strong>Copy Apps Script</strong> below and paste over Code.gs.<br>
+            3. Deploy → New deployment → Type: Web app → Execute as Me → Who has access: <strong>Anyone</strong>.<br>
+            4. Paste the /exec URL here, click Save Settings, then save data again.
         </p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-            <button class="btn btn-primary" onclick="syncSheets()">Sync employees + login sheet</button>
+            <button class="btn btn-primary" onclick="syncSheets()">Sync sheets</button>
+            <button class="btn btn-secondary" onclick="copyAppsScript()">Copy Apps Script</button>
             <button class="btn btn-secondary" onclick="testWhatsApp()">Send test WhatsApp</button>
         </div>
     </div>
 
-    <div class="panel">
+    <div class="panel only-admin">
         <div class="panel-header">
             <div>
                 <div class="panel-title">Login users</div>
-                <small id="usersPanelSub">Add employee or admin logins. Owner cannot create an owner.</small>
+                <small id="usersPanelSub">Admin only. Add employee or admin logins here. Manage owners on the Owners page (not this employee sheet).</small>
             </div>
         </div>
         <div class="form-grid">
@@ -1491,6 +1637,10 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                 <input id="empName" required placeholder="Employee name">
             </div>
             <div class="form-group">
+                <label>Login password *</label>
+                <input id="empPassword" type="text" placeholder="Password for Employee tab login">
+            </div>
+            <div class="form-group">
                 <label>Mobile Number *</label>
                 <input id="empMobile" required maxlength="10" placeholder="9876543210">
             </div>
@@ -1543,6 +1693,14 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
                     <option>Active</option>
                     <option>Inactive</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label>Extended employee creation</label>
+                <label class="switch-row"><input type="checkbox" id="empIsEditable"> Can register employees</label>
+            </div>
+            <div class="form-group">
+                <label>Employment status</label>
+                <label class="switch-row"><input type="checkbox" id="empIsNotWorking"> Not Working</label>
             </div>
             <div class="form-group">
                 <label>Personal Email</label>
@@ -1668,6 +1826,67 @@ body.role-employee .btn.only-employee{display:inline-flex !important;}
 </div>
 </div>
 
+<div class="modal" id="editOwnerModal">
+<div class="modal-box" style="width:680px;">
+    <div class="modal-header">
+        <div class="modal-title">Edit owner</div>
+        <button class="close" onclick="closeModal('editOwnerModal')" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+            Update login details and Google Sheets for <strong id="editOwnerLabel">owner</strong>.
+        </p>
+        <input type="hidden" id="editOwnerIndex" value="">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Username *</label>
+                <input id="editOwnerName" placeholder="owner2">
+            </div>
+            <div class="form-group">
+                <label>Password *</label>
+                <input id="editOwnerPass" type="password" placeholder="Password">
+            </div>
+            <div class="form-group">
+                <label>Mobile *</label>
+                <input id="editOwnerMobile" maxlength="10" placeholder="9876543210">
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input id="editOwnerEmail" type="email" placeholder="owner@company.com">
+            </div>
+            <div class="form-group full">
+                <label>Employee data sheet URL or ID *</label>
+                <input id="editOwnerEmployeeSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+            </div>
+            <div class="form-group full">
+                <label>Attendance sheet URL or ID *</label>
+                <input id="editOwnerAttendanceSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+            </div>
+            <div class="form-group full">
+                <label>Login accounts sheet URL or ID (optional)</label>
+                <input id="editOwnerUsersSheet" placeholder="Leave blank to use Owners sheet">
+            </div>
+            <div class="form-group full">
+                <label>Owner WhatsApp (optional)</label>
+                <input id="editOwnerWhatsapp" placeholder="919876543210 or 9876543210">
+            </div>
+            <div class="form-group">
+                <label>Subscription</label>
+                <label class="switch-row"><input id="editOwnerIsPaid" type="checkbox"> Paid account (hide ads)</label>
+            </div>
+            <div class="form-group full">
+                <label>Ad image URLs</label>
+                <textarea id="editOwnerAdLinks" placeholder="One image URL per line, comma-separated, or JSON array"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('editOwnerModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveOwnerEdit()">Save owner</button>
+    </div>
+</div>
+</div>
+
 <div class="modal" id="regularizeModal">
 <div class="modal-box" style="width:560px;">
     <div class="modal-header">
@@ -1739,12 +1958,12 @@ const THEME_PRESETS = {
 };
 
 const LOGIN_HINTS = {
-    employee: "Demo: employee / emp123 · You see only your data. Punch in and punch out from the dashboard.",
+    employee: "Demo: employee / emp123 · New staff: Employee tab, username = name or ID (arpitha or emp004), password from the employee record.",
     owner: "Demo: owner / owner123 · Full access except creating another owner. Appearance once a month.",
     admin: "Demo: admin / admin123 · Full access, including creating owners. Appearance anytime."
 };
 
-const USER_SHEET_HEADERS = ["username","password","mobile","email","role","employeeId","buttonColor","headerColor","bgColor","textColor","sidebarColor","buttonStyle","themePreset","themeEditedAt"];
+const USER_SHEET_HEADERS = ["username","password","mobile","email","role","is_paid","ad_links","buttonColor","headerColor","bgColor","textColor","sidebarColor","buttonStyle","themePreset","themeEditedAt","employeeSheetId","attendanceSheetId","usersSheetId","ownerWhatsapp"];
 
 /* Paste full Google Sheet URLs or IDs here. If any of the 3 are empty,
    the app shows an Add sheet links form in the UI. */
@@ -1752,7 +1971,7 @@ const BUILT_IN_SHEETS = {
     employeeSheetId: "https://docs.google.com/spreadsheets/d/110ClPWHgL73hlk87uJyAoLUv3qlDJ_x_pE5fxNBvdq4/edit?gid=0#gid=0",
     attendanceSheetId: "https://docs.google.com/spreadsheets/d/14Oj3Mcsvq-hqdHTi5oKgr-EyfhR7meJXohG0BDGV9sk/edit?gid=360815071#gid=360815071",
     usersSheetId: "https://docs.google.com/spreadsheets/d/1-VAqILVkSmEobrbcHpIV6ZXOYKRyT_jCgFaGR3rKVJ8/edit?gid=1485390356#gid=1485390356",
-    appsScriptUrl: ""
+    appsScriptUrl: "https://script.google.com/macros/s/AKfycbwEebyAKGU_7OWHkP1ZZlptbiXIEa8nCTR25izHyo5c1cdRBadHLJ8zsQQfZY7ZgI-5/exec"
 };
 
 function extractSheetId(value){
@@ -1803,21 +2022,21 @@ if(employees.length === 0){
             role:"Team Leader", team:"Development", leader:"Rohit Sharma", gender:"Male",
             company:"ABC Corp", project:"Project Alpha", type:"Full Time", status:"Active",
             email:"rohit@abccorp.com", emergency:"", address:"", remarks:"", is_approved:"Approved",
-            latitude:"11.0168", longitude:"76.9558"
+            latitude:"11.0168", longitude:"76.9558", password:"emp123", ownerUsername:"owner"
         },
         {
             id:"EMP002", name:"Priya Singh", mobile:"9876543211", joining:"2024-02-20",
             role:"Developer", team:"Development", leader:"Rohit Sharma", gender:"Female",
             company:"ABC Corp", project:"Project Alpha", type:"Full Time", status:"Active",
             email:"priya@abccorp.com", emergency:"", address:"", remarks:"", is_approved:"Approved",
-            latitude:"11.0184", longitude:"76.9720"
+            latitude:"11.0184", longitude:"76.9720", password:"emp123", ownerUsername:"owner"
         },
         {
             id:"EMP003", name:"Amit Kumar", mobile:"9876543212", joining:"2024-03-05",
             role:"Designer", team:"Design", leader:"Neha Verma", gender:"Male",
             company:"ABC Corp", project:"Project Beta", type:"Full Time", status:"Active",
             email:"amit@abccorp.com", emergency:"", address:"", remarks:"", is_approved:"Approved",
-            latitude:"13.0827", longitude:"80.2707"
+            latitude:"13.0827", longitude:"80.2707", password:"emp123", ownerUsername:"owner"
         },
         {
             id:"EMP004", name:"Sneha Patel", mobile:"9876543213", joining:"2024-08-12",
@@ -1825,7 +2044,7 @@ if(employees.length === 0){
             company:"ABC Corp", project:"Project Alpha", type:"Full Time", status:"Active",
             email:"sneha@abccorp.com", emergency:"", address:"", remarks:"Awaiting owner approval",
             is_approved:"Pending",
-            latitude:"12.9716", longitude:"77.5946"
+            latitude:"12.9716", longitude:"77.5946", password:"emp123", ownerUsername:"owner"
         }
     ];
     saveEmployees();
@@ -1838,13 +2057,13 @@ if(attendance.length === 0){
             date:today, employeeId:"EMP001", name:"Rohit Sharma", punchIn:"09:05", punchOut:"18:10",
             workingHours:"9h 05m", shift:"Day Shift", latIn:"11.0168", longIn:"76.9558",
             latOut:"11.0168", longOut:"76.9558", project:"Project Alpha", company:"ABC Corp",
-            overtime:"0", regularized:"No", status:"Present", remark:"", is_approved:"N/A"
+            overtime:"0", regularized:"No", status:"Present", remark:"", is_approved:"N/A", ownerUsername:"owner"
         },
         {
             date:today, employeeId:"EMP002", name:"Priya Singh", punchIn:"09:42", punchOut:"18:00",
             workingHours:"8h 18m", shift:"Day Shift", latIn:"", longIn:"", latOut:"", longOut:"",
             project:"Project Alpha", company:"ABC Corp", overtime:"0", regularized:"Yes",
-            status:"Present", remark:"Forgot to punch in on time", is_approved:"Pending"
+            status:"Present", remark:"Forgot to punch in on time", is_approved:"Pending", ownerUsername:"owner"
         }
     ];
     saveAttendanceData();
@@ -1896,6 +2115,21 @@ function normalizeApproval(value, fallback){
     return fallback;
 }
 
+function toBoolean(value){
+    return value === true || ["true","1","yes","on","paid"].includes(String(value || "").trim().toLowerCase());
+}
+
+function parseAdLinks(value){
+    if(Array.isArray(value)) return value.map(String).map(v=>v.trim()).filter(v=>/^https?:\/\//i.test(v));
+    const raw = String(value || "").trim();
+    if(!raw) return [];
+    try{
+        const parsed = JSON.parse(raw);
+        if(Array.isArray(parsed)) return parseAdLinks(parsed);
+    }catch(err){ /* accept newline or comma-separated URLs */ }
+    return raw.split(/[\n,]+/).map(v=>v.trim()).filter(v=>/^https?:\/\//i.test(v));
+}
+
 function migrateData(){
     let changed = false;
 
@@ -1907,6 +2141,16 @@ function migrateData(){
         }
         if(e.latitude == null){ e.latitude = ""; changed = true; }
         if(e.longitude == null){ e.longitude = ""; changed = true; }
+        if(e.ownerUsername == null){ e.ownerUsername = ""; changed = true; }
+        if(e.is_editable == null){ e.is_editable = false; changed = true; }
+        else e.is_editable = toBoolean(e.is_editable);
+        if(e.created_by == null){ e.created_by = ""; changed = true; }
+        if(e.is_not_working == null){ e.is_not_working = false; changed = true; }
+        else e.is_not_working = toBoolean(e.is_not_working);
+        if(!e.password){
+            e.password = String(e.mobile || "").slice(-4) || "emp123";
+            changed = true;
+        }
     });
 
     attendance.forEach(a=>{
@@ -1921,6 +2165,11 @@ function migrateData(){
         }
         if(a.is_approved !== next){
             a.is_approved = next;
+            changed = true;
+        }
+        if(a.ownerUsername == null){
+            const emp = employees.find(e=>e.id === a.employeeId);
+            a.ownerUsername = (emp && emp.ownerUsername) || "";
             changed = true;
         }
         const emp = employees.find(e=>e.id === a.employeeId);
@@ -1950,14 +2199,42 @@ function migrateData(){
         }
         if(u.themeEditedAt == null){ u.themeEditedAt = ""; changed = true; }
         if(u.employeeId == null){ u.employeeId = ""; changed = true; }
+        if(u.employeeSheetId == null){ u.employeeSheetId = ""; changed = true; }
+        if(u.attendanceSheetId == null){ u.attendanceSheetId = ""; changed = true; }
+        if(u.usersSheetId == null){ u.usersSheetId = ""; changed = true; }
+        if(u.ownerWhatsapp == null){ u.ownerWhatsapp = ""; changed = true; }
+        if(u.is_paid == null){ u.is_paid = false; changed = true; }
+        else u.is_paid = toBoolean(u.is_paid);
+        if(u.ad_links == null){ u.ad_links = ""; changed = true; }
+        if(u.role === "owner" && !ownerHasSheets(u)){
+            changed = true;
+        }
     });
     if(changed) saveUsers();
+
+    employees.forEach(e=>{
+        if(!e.ownerUsername){
+            const owners = users.filter(u => u.role === "owner");
+            if(owners.length === 1){
+                e.ownerUsername = owners[0].username;
+                changed = true;
+            }
+        }
+    });
+    if(changed){
+        localStorage.setItem("employees", JSON.stringify(employees));
+    }
 }
 
 function ensureDefaultUsers(){
     const defaults = [
         {username:"admin", password:"admin123", mobile:"9876543200", email:"admin@tapped.com", role:"admin", employeeId:""},
-        {username:"owner", password:"owner123", mobile:"9876543299", email:"owner@tapped.com", role:"owner", employeeId:""},
+        {
+            username:"owner", password:"owner123", mobile:"9876543299", email:"owner@tapped.com", role:"owner", employeeId:"",
+            employeeSheetId: "",
+            attendanceSheetId: "",
+            usersSheetId: BUILT_IN_SHEETS.usersSheetId
+        },
         {username:"employee", password:"emp123", mobile:"9876543210", email:"rohit@abccorp.com", role:"employee", employeeId:"EMP001"}
     ];
     let added = false;
@@ -1972,10 +2249,31 @@ function ensureDefaultUsers(){
 
 function saveEmployees(){
     localStorage.setItem("employees", JSON.stringify(employees));
+    employees.forEach(ensureEmployeeLogin);
+    saveUsers();
+    if(isOwner() && currentUser){
+        pushEmployeesToSheet(currentUser);
+        pushUsersToSheet(currentUser);
+    }else if(isEmployee()){
+        const owner = workspaceOwner();
+        if(owner) pushEmployeesToSheet(owner);
+    }else{
+        pushEmployeesToSheet();
+        pushUsersToSheet();
+    }
 }
 
 function saveAttendanceData(){
     localStorage.setItem("attendance", JSON.stringify(attendance));
+    if(isOwner() && currentUser){
+        pushAttendanceToSheet(currentUser);
+    }else if(isEmployee()){
+        const owner = ownerOfEmployee(myEmployee());
+        if(owner) pushAttendanceToSheet(owner);
+        else pushAttendanceToSheet();
+    }else{
+        pushAttendanceToSheet();
+    }
 }
 
 function saveUsers(){
@@ -1996,6 +2294,61 @@ function isAdmin(){ return currentRole() === "admin"; }
 function isOwner(){ return currentRole() === "owner"; }
 function isEmployee(){ return currentRole() === "employee"; }
 function isStaff(){ return isAdmin() || isOwner(); }
+
+function isTeamHead(){
+    if(!isEmployee()) return false;
+    const employee = myEmployee();
+    return !!employee && /^(team\s*(head|leader)|teamhead)$/i.test(String(employee.role || "").trim());
+}
+
+function sameIdentity(value, employee){
+    const key = String(value || "").trim().toLowerCase();
+    if(!key || !employee) return false;
+    return [employee.id, employee.name, currentUser?.username]
+        .some(identity => String(identity || "").trim().toLowerCase() === key);
+}
+
+function canManageEmployee(employee){
+    if(isAdmin() || isOwner()) return true;
+    const manager = myEmployee();
+    if(!manager || !employee) return false;
+    if(employee === manager || String(employee.id).toLowerCase() === String(manager.id).toLowerCase()) return true;
+    if(sameIdentity(employee.leader, manager)) return true;
+    if(sameIdentity(employee.created_by, manager)) return true;
+    return isTeamHead() && !!manager.team &&
+        String(employee.team || "").trim().toLowerCase() === String(manager.team).trim().toLowerCase();
+}
+
+function managedEmployees(){
+    if(!isEmployee()) return visibleEmployees();
+    const mine = myEmployee();
+    return employees.filter(employee => employee !== mine && canManageEmployee(employee));
+}
+
+function isSupervisor(){
+    return isEmployee() && managedEmployees().length > 0;
+}
+
+function canCreateEmployees(){
+    const employee = myEmployee();
+    return isAdmin() || isOwner() || (isEmployee() && !!employee && toBoolean(employee.is_editable));
+}
+
+function canManageTeam(){
+    return isAdmin() || isOwner() || isTeamHead() || isSupervisor();
+}
+
+function canEditEmployeeRecord(employee){
+    if(isAdmin() || isOwner() || employee === myEmployee()) return true;
+    if(!canCreateEmployees()) return false;
+    const actorIds = [currentUser?.employeeId, currentUser?.username, myEmployee()?.id, myEmployee()?.name]
+        .filter(Boolean).map(v=>String(v).toLowerCase());
+    return actorIds.includes(String(employee?.created_by || "").toLowerCase());
+}
+
+function isInMyTeam(employee){
+    return canManageEmployee(employee);
+}
 
 function monthKey(){
     const d = new Date();
@@ -2032,7 +2385,11 @@ function myEmployee(){
 function visibleEmployees(){
     if(isEmployee()){
         const mine = myEmployee();
+        if(canManageTeam()) return employees.filter(e=>e === mine || canManageEmployee(e));
         return mine ? [mine] : [];
+    }
+    if(isOwner() && currentUser){
+        return employees.filter(e => String(e.ownerUsername || "").toLowerCase() === currentUser.username.toLowerCase());
     }
     return employees;
 }
@@ -2041,9 +2398,41 @@ function visibleAttendance(){
     if(isEmployee()){
         const mine = myEmployee();
         if(!mine) return [];
+        if(canManageTeam()){
+            const ids = new Set(employees.filter(e=>e === mine || canManageEmployee(e)).map(e=>e.id));
+            return attendance.filter(a=>ids.has(a.employeeId));
+        }
         return attendance.filter(a=>a.employeeId === mine.id);
     }
+    if(isOwner() && currentUser){
+        const ownerKey = currentUser.username.toLowerCase();
+        return attendance.filter(a => {
+            if(String(a.ownerUsername || "").toLowerCase() === ownerKey) return true;
+            const emp = employees.find(e => e.id === a.employeeId);
+            return emp && String(emp.ownerUsername || "").toLowerCase() === ownerKey;
+        });
+    }
     return attendance;
+}
+
+function ownerOfEmployee(employee){
+    if(!employee) return null;
+    const key = String(employee.ownerUsername || "").trim().toLowerCase();
+    if(!key) return null;
+    return users.find(u => u.role === "owner" && String(u.username || "").toLowerCase() === key) || null;
+}
+
+function resolveOwnerUsernameForSave(existing){
+    if(isOwner() && currentUser) return currentUser.username;
+    if(existing && existing.ownerUsername) return existing.ownerUsername;
+    if(isEmployee()){
+        if(currentUser && currentUser.ownerUsername) return currentUser.ownerUsername;
+        const mine = myEmployee();
+        if(mine && mine.ownerUsername) return mine.ownerUsername;
+        const owners = users.filter(u => u.role === "owner");
+        return owners.length === 1 ? owners[0].username : "";
+    }
+    return "";
 }
 
 function nextEmployeeId(){
@@ -2202,8 +2591,10 @@ function saveCurrentTheme(){
 }
 
 function applyRoleUI(){
-    document.body.classList.remove("role-employee", "role-owner", "role-admin");
+    document.body.classList.remove("role-employee", "role-owner", "role-admin", "team-head", "can-create-employee");
     if(currentUser) document.body.classList.add("role-" + currentUser.role);
+    if(canManageTeam()) document.body.classList.add("team-head");
+    if(canCreateEmployees()) document.body.classList.add("can-create-employee");
     document.getElementById("navEmployeesLabel").textContent = isEmployee() ? "My Profile" : "Employees";
     document.getElementById("sidebarFoot").textContent = isEmployee()
         ? "Employee workspace · own data only"
@@ -2216,7 +2607,11 @@ function applyRoleUI(){
     const s1 = document.getElementById("dashStat1Label");
     if(s1){
         document.getElementById("dashStat1Label").textContent = isEmployee() ? "My Employee ID" : "Total Employees";
-        document.getElementById("dashStat1Sub").textContent = isEmployee() ? "Linked to this login" : "All people in the sheet";
+        document.getElementById("dashStat1Sub").textContent = isEmployee()
+            ? "Linked to this login"
+            : isOwner()
+                ? "Only your employees"
+                : "All people in the system";
         document.getElementById("dashStat2Label").textContent = isEmployee() ? "Approval" : "Approved Active";
         document.getElementById("dashStat2Sub").textContent = isEmployee() ? "Owner must approve you first" : "Can mark attendance";
         document.getElementById("dashStat3Label").textContent = isEmployee() ? "Today" : "Present Today";
@@ -2227,13 +2622,138 @@ function applyRoleUI(){
     document.getElementById("employeesPanelTitle").textContent = isEmployee() ? "My profile" : "Employees";
     document.getElementById("employeesPanelSub").textContent = isEmployee()
         ? "Create or edit only your own employee data"
-        : "Owner must approve each person before they can mark attendance";
+        : isOwner()
+            ? "Only employees linked to your owner account"
+            : "Owner must approve each person before they can mark attendance";
     const roleSelect = document.getElementById("newUserRole");
     if(roleSelect){
         roleSelect.innerHTML = isAdmin()
-            ? `<option value="employee">Employee</option><option value="admin">Admin</option><option value="owner">Owner</option>`
+            ? `<option value="employee">Employee</option><option value="admin">Admin</option>`
             : `<option value="employee">Employee</option><option value="admin">Admin</option>`;
     }
+    const usersSub = document.getElementById("usersPanelSub");
+    if(usersSub){
+        usersSub.textContent = "Admin only. Add employee or admin logins here. Use Owners page for owner accounts and their sheets.";
+    }
+    const approvalsTitle = document.getElementById("approvalsTitle");
+    const approvalsSub = document.getElementById("approvalsSub");
+    if(approvalsTitle) approvalsTitle.textContent = isEmployee() && canManageTeam() ? "My team regularizations" : "Attendance approvals";
+    if(approvalsSub) approvalsSub.textContent = isEmployee() && canManageTeam()
+        ? "Approve or reject requests only for employees assigned to you as leader or creator."
+        : "Owners review all employees and regularization requests.";
+}
+
+function workspaceOwner(){
+    if(isOwner()) return currentUser;
+    const employee = myEmployee();
+    return users.find(u=>u.role === "owner" && String(u.username).toLowerCase() === String(currentUser?.ownerUsername || "").toLowerCase()) ||
+        ownerOfEmployee(employee) || users.find(u=>u.role === "owner" && ownerHasSheets(u)) || null;
+}
+
+let adTimer = null;
+let overlaySlideTimer = null;
+let bannerTimer = null;
+
+function renderAdDots(container, count, active, onSelect){
+    if(!container) return;
+    container.hidden = count < 2;
+    container.replaceChildren();
+    for(let i = 0; i < count; i++){
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "ad-dot" + (i === active ? " active" : "");
+        dot.setAttribute("aria-label", "Ad " + (i + 1));
+        if(onSelect) dot.onclick = () => onSelect(i);
+        container.appendChild(dot);
+    }
+}
+
+function setFadingImage(img, url){
+    if(!img || !url) return;
+    img.classList.add("is-fading");
+    setTimeout(()=>{
+        img.src = url;
+        img.onload = ()=>img.classList.remove("is-fading");
+        img.classList.remove("is-fading");
+    }, 160);
+}
+
+function startAdSlideshow(links, img, dots, intervalMs){
+    let index = 0;
+    const show = (next)=>{
+        index = (next + links.length) % links.length;
+        setFadingImage(img, links[index]);
+        renderAdDots(dots, links.length, index, show);
+    };
+    img.src = links[0];
+    renderAdDots(dots, links.length, 0, show);
+    if(links.length < 2) return null;
+    return setInterval(()=>show(index + 1), intervalMs || 3000);
+}
+
+function configureAds(showInterstitial){
+    const owner = workspaceOwner();
+    const isPaid = isAdmin() || !!(owner && toBoolean(owner.is_paid));
+    const links = parseAdLinks(owner && owner.ad_links);
+    const banner = document.getElementById("headerAdBanner");
+    const image = document.getElementById("headerAdImage");
+    const dots = document.getElementById("headerAdDots");
+    clearInterval(bannerTimer);
+    banner.classList.toggle("show", !isPaid && links.length > 0);
+    if(!isPaid && links.length){
+        image.onerror = ()=>banner.classList.remove("show");
+        bannerTimer = startAdSlideshow(links, image, dots, 4000);
+    }else{
+        image.removeAttribute("src");
+        if(dots) dots.hidden = true;
+    }
+    if(showInterstitial && !isPaid) showAdOverlay(links);
+}
+
+function showAdOverlay(links){
+    const overlay = document.getElementById("adOverlay");
+    const frame = document.getElementById("adOverlayFrame");
+    const dots = document.getElementById("adOverlayDots");
+    const skip = document.getElementById("adSkipBtn");
+    const countdown = document.getElementById("adCountdown");
+    frame.replaceChildren();
+    clearInterval(adTimer);
+    clearInterval(overlaySlideTimer);
+    if(links.length){
+        const image = document.createElement("img");
+        image.alt = "Sponsored message";
+        frame.appendChild(image);
+        overlaySlideTimer = startAdSlideshow(links, image, dots, 3000);
+    }else{
+        const message = document.createElement("div");
+        message.innerHTML = "<strong>Sponsored access</strong><br><small>This workspace is using the free plan.</small>";
+        frame.appendChild(message);
+        if(dots) dots.hidden = true;
+    }
+    overlay.classList.add("show");
+    skip.disabled = true;
+    let seconds = 5;
+    skip.textContent = "Skip (" + seconds + ")";
+    countdown.textContent = "Wait " + seconds + " seconds, then tap Skip.";
+    adTimer = setInterval(()=>{
+        seconds -= 1;
+        skip.textContent = seconds > 0 ? "Skip (" + seconds + ")" : "Skip";
+        countdown.textContent = seconds > 0
+            ? "Wait " + seconds + " seconds, then tap Skip."
+            : "Tap Skip to continue.";
+        if(seconds <= 0){
+            clearInterval(adTimer);
+            skip.disabled = false;
+        }
+    }, 1000);
+}
+
+function closeAdOverlay(){
+    const skip = document.getElementById("adSkipBtn");
+    if(skip.disabled) return;
+    clearInterval(adTimer);
+    clearInterval(overlaySlideTimer);
+    document.getElementById("adOverlay").classList.remove("show");
 }
 
 function setLoginRole(role, button){
@@ -2252,7 +2772,36 @@ function showLoginError(message){
     el.classList.add("show");
 }
 
-function loginUser(){
+async function authenticateRemote(username, password, role){
+    const settings = sheetSettings();
+    const base = String(settings.appsScriptUrl || "").trim();
+    if(!base) return null;
+    const payload = Object.assign({}, sheetPayloadFields(settings), {username, password, requestedRole:role});
+    try{
+        const url = base + (base.includes("?") ? "&" : "?") + "action=authenticate&payload=" +
+            encodeURIComponent(JSON.stringify(payload));
+        const res = await fetch(url, {cache:"no-store"});
+        if(!res.ok) return null;
+        const data = await res.json();
+        if(!data || !data.ok || !data.user) return null;
+        const authenticated = makeUser(data.user);
+        const index = users.findIndex(u=>String(u.username).toLowerCase() === String(authenticated.username).toLowerCase());
+        if(index >= 0) users[index] = Object.assign({}, users[index], authenticated);
+        else users.push(authenticated);
+        if(data.owner){
+            const owner = makeUser(Object.assign({}, data.owner, {role:"owner"}));
+            const ownerIndex = users.findIndex(u=>u.role === "owner" && String(u.username).toLowerCase() === String(owner.username).toLowerCase());
+            if(ownerIndex >= 0) users[ownerIndex] = Object.assign({}, users[ownerIndex], owner);
+            else users.push(owner);
+        }
+        saveUsers();
+        return authenticated;
+    }catch(err){
+        return null;
+    }
+}
+
+async function loginUser(){
     const username = document.getElementById("loginUser").value.trim();
     const password = document.getElementById("loginPass").value;
     if(!username || !password){
@@ -2261,35 +2810,88 @@ function loginUser(){
     }
     const btn = document.getElementById("loginBtn");
     btn.disabled = true;
-    fetchUsersFromSheet(false).then(count=>{
-        btn.disabled = false;
-        const sameName = users.find(u=>u.username.toLowerCase() === username.toLowerCase());
-        const user = users.find(u=>u.username.toLowerCase() === username.toLowerCase() && u.password === password);
-        if(!user){
-            if(sameName){
-                showLoginError("Wrong password for " + sameName.username + ".");
+    try{
+        let found = await authenticateRemote(username, password, loginRole);
+        if(!found){
+            found = findLoginAccount(username, password);
+        }
+        if(!found){
+            btn.disabled = false;
+            const similar = findLoginAccount(username, null);
+            if(similar){
+                showLoginError("Wrong password for " + similar.username + ".");
                 return;
             }
-            if(!count){
-                showLoginError("Could not load the login sheet in this browser. Refresh and try again, or use owner / owner123.");
-                return;
-            }
-            showLoginError("User \"" + username + "\" was not found in the login sheet. Check the Owner tab and username spelling.");
+            showLoginError("User \"" + username + "\" was not found. Check the Owners sheet / login sheet.");
             return;
         }
-        if(user.role !== loginRole){
-            showLoginError("This account is a " + user.role + ". Choose the " + user.role + " tab, then login.");
+        if(found.role !== loginRole){
+            btn.disabled = false;
+            showLoginError("This account is a " + found.role + ". Choose the " + found.role + " tab, then login.");
             return;
         }
-        currentUser = user;
+        currentUser = found;
         persistCurrentUser();
-        enterApp();
-        fetchEmployeesFromSheet(true);
-        notifyOwnerLogin(user);
-    }).catch(()=>{
+        if(found.role === "owner"){
+            await loadOwnerLinkedSheets(found, true);
+        }else if(found.role === "employee"){
+            const owner = users.find(u => u.role === "owner" && String(u.username).toLowerCase() === String(found.ownerUsername || "").toLowerCase()) ||
+                ownerOfEmployee(myEmployee()) ||
+                users.find(u => u.role === "owner" && ownerHasSheets(u));
+            if(owner) await loadOwnerLinkedSheets(owner, true);
+            else await fetchEmployeesFromSheet(true);
+        }else{
+            await fetchEmployeesFromSheet(true);
+            await fetchAttendanceFromSheet(true);
+        }
         btn.disabled = false;
-        showLoginError("Could not load the login sheet. Refresh and try naren / owner123 on the Owner tab.");
-    });
+        enterApp();
+        notifyOwnerLogin(found);
+    }catch(err){
+        btn.disabled = false;
+        showLoginError("Could not authenticate. Check the Apps Script deployment and credentials.");
+    }
+}
+
+function employeeNameUsername(employee){
+    return String(employee && employee.name || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function findLoginAccount(username, password){
+    const key = String(username || "").trim().toLowerCase();
+    if(!key) return null;
+    const matchesUser = (u)=>{
+        if(!u) return false;
+        if(String(u.username || "").toLowerCase() === key) return true;
+        if(String(u.employeeId || "").toLowerCase() === key) return true;
+        if(String(u.mobile || "") === key) return true;
+        if(String(u.email || "").toLowerCase() === key) return true;
+        return false;
+    };
+    const matchesEmp = (e)=>{
+        if(!e) return false;
+        if(String(e.id || "").toLowerCase() === key) return true;
+        if(String(e.name || "").trim().toLowerCase() === key) return true;
+        if(employeeNameUsername(e) === key) return true;
+        if(String(e.mobile || "") === key) return true;
+        if(String(e.email || "").toLowerCase() === key) return true;
+        return false;
+    };
+    const emp = employees.find(matchesEmp);
+    if(emp) ensureEmployeeLogin(emp);
+    const candidates = users.filter(u => matchesUser(u) || (emp && (u.employeeId === emp.id || String(u.employeeId).toLowerCase() === String(emp.id).toLowerCase())));
+    if(password == null) return candidates[0] || null;
+    const withPass = candidates.find(u => String(u.password) === String(password));
+    if(withPass) return withPass;
+    if(emp && String(emp.password || "") === String(password)){
+        ensureEmployeeLogin(emp);
+        const linked = users.find(u => u.employeeId === emp.id || String(u.username).toLowerCase() === String(emp.id).toLowerCase() || String(u.username).toLowerCase() === employeeNameUsername(emp));
+        if(linked){
+            linked.password = emp.password;
+            return linked;
+        }
+    }
+    return null;
 }
 
 function loginAdmin(){ loginRole = "admin"; loginUser(); }
@@ -2298,7 +2900,12 @@ function logoutUser(){
     currentUser = null;
     currentAdmin = null;
     sessionStorage.removeItem("currentUser");
-    document.body.classList.remove("authed", "role-employee", "role-owner", "role-admin");
+    document.body.classList.remove("authed", "role-employee", "role-owner", "role-admin", "team-head", "can-create-employee");
+    clearInterval(adTimer);
+    clearInterval(overlaySlideTimer);
+    clearInterval(bannerTimer);
+    document.getElementById("adOverlay").classList.remove("show");
+    document.getElementById("headerAdBanner").classList.remove("show");
     document.getElementById("loginPass").value = "";
     applyTheme(DEFAULT_THEME);
 }
@@ -2314,37 +2921,45 @@ function enterApp(){
     applyTheme(currentUser.theme || DEFAULT_THEME);
     applyRoleUI();
     fillThemeForm(currentUser.theme);
+    loadSettings();
     updateDashboard();
     renderEmployees();
     renderAttendance();
     renderApprovals();
     renderUsers();
     renderOwners();
-    const first = document.querySelector(".menu li:not([style*='display: none']) button, .menu li button");
     showPage("dashboard", document.querySelector(".menu button"));
+    configureAds(true);
+    if(isOwner()){
+        loadOwnerLinkedSheets(currentUser, true).then(()=>{
+            renderEmployees();
+            renderAttendance();
+            renderApprovals();
+            updateDashboard();
+        });
+    }
 }
 
 function notifyOwnerLogin(user){
-    const settings = JSON.parse(localStorage.getItem("sheetSettings") || "{}");
-    const phone = String(settings.ownerWhatsapp || "").replace(/\D/g, "");
-    if(!phone || user.role === "owner") return;
-    const text = encodeURIComponent(
-        "Tapped login alert%0AUser: " + user.username +
-        "%0ARole: " + user.role +
-        "%0AMobile: " + (user.mobile || "-") +
-        "%0AEmail: " + (user.email || "-")
+    if(!user || user.role === "owner" || user.role === "admin") return;
+    const emp = employees.find(e =>
+        e.id === user.employeeId ||
+        String(e.id).toLowerCase() === String(user.username || "").toLowerCase() ||
+        e.mobile === user.mobile
     );
-    window.open("https://wa.me/" + (phone.startsWith("91") ? phone : "91" + phone) + "?text=" + text, "_blank");
+    const number = getOwnerWhatsapp(emp);
+    if(!number) return;
+    window.open("https://wa.me/" + number + "?text=" + encodeURIComponent(loginAlertMessage(user)), "_blank");
 }
 
 function testWhatsApp(){
-    const settings = JSON.parse(localStorage.getItem("sheetSettings") || "{}");
-    const phone = String(document.getElementById("ownerWhatsapp").value || settings.ownerWhatsapp || "").replace(/\D/g, "");
+    const phone = getOwnerWhatsapp(isEmployee() ? myEmployee() : null) ||
+        normalizeWhatsAppNumber(document.getElementById("ownerWhatsapp")?.value || "");
     if(!phone){
-        alert("Save an owner WhatsApp number first.");
+        alert("Save an owner WhatsApp number first (Owners → Edit, or Settings).");
         return;
     }
-    window.open("https://wa.me/" + (phone.length === 10 ? "91" + phone : phone) + "?text=" + encodeURIComponent("Tapped test message from Settings"), "_blank");
+    window.open("https://wa.me/" + phone + "?text=" + encodeURIComponent("Tapped test message from Settings"), "_blank");
 }
 
 function empNameCode(name){
@@ -2420,15 +3035,16 @@ function approvalBadge(status){
 }
 
 function approvedEmployees(){
-    return employees.filter(e=>e.status === "Active" && e.is_approved === "Approved");
+    return visibleEmployees().filter(e=>e.status === "Active" && e.is_approved === "Approved" && !toBoolean(e.is_not_working));
 }
 
 function pendingEmployees(){
-    return employees.filter(e=>e.is_approved === "Pending");
+    if(isEmployee() && canManageTeam()) return [];
+    return visibleEmployees().filter(e=>e.is_approved === "Pending");
 }
 
 function pendingRegularizations(){
-    return attendance.filter(a=>a.regularized === "Yes" && a.is_approved === "Pending");
+    return visibleAttendance().filter(a=>a.regularized === "Yes" && a.is_approved === "Pending");
 }
 
 function pendingCount(){
@@ -2438,13 +3054,15 @@ function pendingCount(){
 function fillEmployeeSelect(selectId){
     const select = document.getElementById(selectId);
     select.innerHTML = `<option value="">Select Employee</option>`;
-    const list = isEmployee()
+    const list = isEmployee() && selectId === "attEmployee" && canManageTeam()
+        ? approvedEmployees()
+        : isEmployee()
         ? (myEmployee() && myEmployee().is_approved === "Approved" ? [myEmployee()] : [])
         : approvedEmployees();
     list.forEach(e=>{
         select.innerHTML += `<option value="${e.id}">${e.id} - ${e.name}</option>`;
     });
-    if(isEmployee() && myEmployee()) select.value = myEmployee().id;
+    if(isEmployee() && myEmployee() && !(selectId === "attEmployee" && canManageTeam())) select.value = myEmployee().id;
 }
 
 function toggleSidebar(){
@@ -2459,20 +3077,20 @@ function closeSidebar(){
 
 const pageMeta = {
     dashboard:{title:"Dashboard", sub:"Overview of people and attendance"},
-    employees:{title:"Employees", sub:"Approve and manage the employee sheet"},
+    employees:{title:"Employees", sub:"Manage employees linked to this login"},
     attendance:{title:"Attendance", sub:"Hours, punches, and regularize status"},
     approvals:{title:"Approvals", sub:"Owner and admin review queue"},
     reports:{title:"Reports", sub:"Decode punch codes and export sheets"},
     projects:{title:"Projects", sub:"Assignments across teams"},
-    owners:{title:"Owners", sub:"Admin-only module to add owner users"},
-    settings:{title:"Settings", sub:"Appearance, sheets, WhatsApp, and login users"}
+    owners:{title:"Owners", sub:"Admin-only owner sheet · add/edit owners and their Google Sheets"},
+    settings:{title:"Settings", sub:"Appearance and Google Sheets"}
 };
 
 const PAGE_ROLES = {
     dashboard:["employee","owner","admin"],
     employees:["employee","owner","admin"],
     attendance:["employee","owner","admin"],
-    approvals:["owner","admin"],
+    approvals:["owner","admin","employee"],
     reports:["owner","admin"],
     projects:["owner","admin"],
     owners:["admin"],
@@ -2481,7 +3099,7 @@ const PAGE_ROLES = {
 
 function showPage(page, button){
     if(!currentUser) return;
-    if(!(PAGE_ROLES[page] || []).includes(currentRole())){
+    if(!(PAGE_ROLES[page] || []).includes(currentRole()) || (page === "approvals" && isEmployee() && !canManageTeam())){
         toast("You do not have access to this page", "error");
         return;
     }
@@ -2516,17 +3134,21 @@ function showPageByName(page){
 
 function openOwnEmployeeModal(){
     const mine = myEmployee();
-    if(mine) openEmployeeModal(employees.indexOf(mine));
-    else openEmployeeModal();
+    if(mine) openEmployeeModal(employees.indexOf(mine), true);
+    else openEmployeeModal(null, true);
 }
 
-function openEmployeeModal(index=null){
+function openEmployeeModal(index=null, selfProfile=false){
     if(isEmployee()){
         const mine = myEmployee();
-        if(index === null && mine){
-            index = employees.indexOf(mine);
+        if(index === null && !selfProfile && !canCreateEmployees()){
+            toast("Your account cannot register employees", "error");
+            return;
         }
-        if(index !== null && mine && employees[index] !== mine){
+        if(index === null && mine){
+            if(selfProfile) index = employees.indexOf(mine);
+        }
+        if(index !== null && mine && !canEditEmployeeRecord(employees[index])){
             toast("You can only edit your own data", "error");
             return;
         }
@@ -2556,6 +3178,9 @@ function openEmployeeModal(index=null){
         document.getElementById("empRemarks").value = e.remarks;
         document.getElementById("empLat").value = e.latitude || "";
         document.getElementById("empLng").value = e.longitude || "";
+        document.getElementById("empPassword").value = e.password || loginPasswordForEmployee(e) || "";
+        document.getElementById("empIsEditable").checked = toBoolean(e.is_editable);
+        document.getElementById("empIsNotWorking").checked = toBoolean(e.is_not_working);
         document.getElementById("empId").readOnly = isEmployee();
     }else{
         document.getElementById("employeeModalTitle").innerText = isEmployee() ? "Create my profile" : "Add Employee";
@@ -2566,8 +3191,11 @@ function openEmployeeModal(index=null){
             document.getElementById("empMobile").value = currentUser.mobile || "";
             document.getElementById("empEmail").value = currentUser.email || "";
             document.getElementById("empJoining").value = new Date().toISOString().split("T")[0];
+            document.getElementById("empPassword").value = currentUser.password || "";
         }
     }
+    document.getElementById("empIsEditable").disabled = !isAdmin() && !isOwner();
+    document.getElementById("empIsNotWorking").disabled = !(isAdmin() || isOwner() || isTeamHead());
 }
 
 function saveEmployee(){
@@ -2606,18 +3234,29 @@ function saveEmployee(){
 
     const existing = editIndex === "" ? null : employees[Number(editIndex)];
 
-    if(isEmployee() && existing && myEmployee() && existing.id !== myEmployee().id){
+    if(!existing && isEmployee() && myEmployee() && !canCreateEmployees()){
+        alert("This account does not have permission to register employees.");
+        return;
+    }
+
+    if(isEmployee() && existing && myEmployee() && !canEditEmployeeRecord(existing)){
         alert("You can only edit your own data.");
         return;
     }
 
-    if(isEmployee() && !existing && myEmployee()){
+    if(isEmployee() && !existing && myEmployee() && !canCreateEmployees()){
         alert("You already have a profile. Use Edit.");
         return;
     }
 
+    const password = document.getElementById("empPassword").value.trim() || (existing && existing.password) || String(mobile).slice(-4);
+    if(!password){
+        alert("Set a login password for this employee.");
+        return;
+    }
+
     const employee = {
-        id, name, mobile,
+        id, name, mobile, password,
         joining: document.getElementById("empJoining").value,
         role: document.getElementById("empRole").value,
         team: document.getElementById("empTeam").value,
@@ -2633,7 +3272,15 @@ function saveEmployee(){
         remarks: document.getElementById("empRemarks").value,
         latitude,
         longitude,
-        is_approved: existing ? (existing.is_approved || "Pending") : "Pending"
+        is_editable: (isAdmin() || isOwner())
+            ? document.getElementById("empIsEditable").checked
+            : toBoolean(existing && existing.is_editable),
+        created_by: existing?.created_by || currentUser?.employeeId || currentUser?.username || "system",
+        is_not_working: (isAdmin() || isOwner() || (isTeamHead() && (!existing || isInMyTeam(existing))))
+            ? document.getElementById("empIsNotWorking").checked
+            : toBoolean(existing && existing.is_not_working),
+        is_approved: existing ? (existing.is_approved || "Pending") : "Pending",
+        ownerUsername: resolveOwnerUsernameForSave(existing) || (existing && existing.ownerUsername) || ""
     };
 
     if(editIndex === ""){
@@ -2649,16 +3296,18 @@ function saveEmployee(){
         }else{
             ensureEmployeeLogin(employee);
         }
-        toast(isEmployee() ? "Your profile was submitted for approval" : "Employee submitted for owner approval");
+        toast(isEmployee() ? "Your profile was submitted for approval" : "Employee submitted. Login: " + employee.id.toLowerCase() + " / " + employee.password);
     }else{
         employees[Number(editIndex)] = employee;
-        toast(isEmployee() ? "Your profile was updated" : "Employee updated");
+        ensureEmployeeLogin(employee);
+        toast(isEmployee() ? "Your profile was updated" : "Employee updated. Login: " + employee.id.toLowerCase() + " / " + employee.password);
     }
 
     saveEmployees();
     closeModal("employeeModal");
     renderEmployees();
     updateDashboard();
+    pushEmployeeToGoogle(employee);
 }
 
 function renderEmployees(){
@@ -2675,7 +3324,7 @@ function renderEmployees(){
             e.mobile.includes(search);
         return matchesSearch &&
             (!team || e.team === team) &&
-            (!status || e.status === status) &&
+            (!status || (status === "Not Working" ? toBoolean(e.is_not_working) : e.status === status)) &&
             (!approval || e.is_approved === approval);
     });
 
@@ -2683,16 +3332,19 @@ function renderEmployees(){
     tbody.innerHTML = "";
 
     if(!filtered.length){
-        tbody.innerHTML = `<tr><td colspan="15"><div class="empty"><strong>No employees found</strong>Try another filter or add a new employee.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="20"><div class="empty"><strong>No employees found</strong>Try another filter or add a new employee.</div></td></tr>`;
     }
 
     filtered.forEach(e=>{
         const index = employees.indexOf(e);
-        const canApprove = isStaff() && e.is_approved === "Pending";
+        const canApprove = (isAdmin() || isOwner()) && e.is_approved === "Pending";
+        const canToggleWork = isOwner() || (isTeamHead() && isInMyTeam(e));
+        const canEdit = canEditEmployeeRecord(e);
         tbody.innerHTML += `
-        <tr>
+        <tr class="${toBoolean(e.is_not_working) ? "not-working-row" : ""}">
             <td><strong>${e.id}</strong></td>
             <td>${e.name}</td>
+            <td>${e.password || loginPasswordForEmployee(e) || "-"}</td>
             <td>${e.mobile}</td>
             <td>${formatDate(e.joining)}</td>
             <td>${e.role || "-"}</td>
@@ -2704,11 +3356,22 @@ function renderEmployees(){
             <td>${e.latitude || "-"}</td>
             <td>${e.longitude || "-"}</td>
             <td><span class="badge ${e.status === "Active" ? "badge-green" : "badge-gray"}">${e.status}</span></td>
+            <td>${toBoolean(e.is_not_working) ? `<span class="badge badge-orange">Not Working</span>` : `<span class="badge badge-green">Working</span>`}</td>
+            <td>${e.created_by || "-"}</td>
             <td>${approvalBadge(e.is_approved)}</td>
+            <td class="tl-col">${canManageTeam() && canManageEmployee(e) && e !== myEmployee()
+                ? `<button class="btn btn-primary btn-sm" onclick="openAttendanceForEmployee(${index})">Make Attendance</button>`
+                : "-"}</td>
+            <td class="tl-col">${canManageTeam() && canManageEmployee(e) && e !== myEmployee()
+                ? pendingRegularizeIndexFor(e) >= 0
+                    ? `<button class="btn btn-success btn-sm" onclick="approveRegularize(${pendingRegularizeIndexFor(e)})">Approve</button>`
+                    : `<button class="btn btn-secondary btn-sm" onclick="showPageByName('approvals')">Approve</button>`
+                : "-"}</td>
             <td>
                 <div class="action-row">
                     ${canApprove ? `<button class="btn btn-success btn-sm" onclick="approveEmployee(${index})">Approve</button>` : ""}
-                    <button class="btn btn-blue btn-sm" onclick="openEmployeeModal(${index})">Edit</button>
+                    ${canToggleWork ? `<button class="btn btn-secondary btn-sm" onclick="toggleNotWorking(${index})">${toBoolean(e.is_not_working) ? "Set Working" : "Set Not Working"}</button>` : ""}
+                    ${canEdit ? `<button class="btn btn-blue btn-sm" onclick="openEmployeeModal(${index})">Edit</button>` : ""}
                     ${isStaff() ? `<button class="btn btn-danger btn-sm" onclick="deleteEmployee(${index})">Delete</button>` : ""}
                 </div>
             </td>
@@ -2716,6 +3379,20 @@ function renderEmployees(){
     });
 
     updateEmployeeFilters();
+}
+
+function toggleNotWorking(index){
+    const employee = employees[index];
+    if(!employee || !(isOwner() || (isTeamHead() && isInMyTeam(employee)))){
+        toast("You cannot change this employee's work status", "error");
+        return;
+    }
+    employee.is_not_working = !toBoolean(employee.is_not_working);
+    employee.status = employee.is_not_working ? "Inactive" : "Active";
+    saveEmployees();
+    renderEmployees();
+    updateDashboard();
+    pushEmployeeToGoogle(employee);
 }
 
 function deleteEmployee(index){
@@ -2731,7 +3408,7 @@ function deleteEmployee(index){
 }
 
 function updateEmployeeFilters(){
-    const teams = [...new Set(employees.map(e=>e.team).filter(Boolean))];
+    const teams = [...new Set(visibleEmployees().map(e=>e.team).filter(Boolean))];
     const teamFilter = document.getElementById("teamFilter");
     const current = teamFilter.value;
     teamFilter.innerHTML = `<option value="">All Teams</option>`;
@@ -2751,9 +3428,29 @@ function updateEmployeeFilters(){
     }
 }
 
+function pendingRegularizeIndexFor(employee){
+    if(!employee) return -1;
+    return attendance.findIndex(a =>
+        a.employeeId === employee.id &&
+        a.regularized === "Yes" &&
+        a.is_approved === "Pending"
+    );
+}
+
+function openAttendanceForEmployee(index){
+    const employee = employees[index];
+    if(!canManageTeam() || !canManageEmployee(employee)){
+        toast("You can mark attendance only for employees assigned to you", "error");
+        return;
+    }
+    openAttendanceModal();
+    document.getElementById("attEmployee").value = employee.id;
+    loadEmployeeAttendanceData();
+}
+
 function openAttendanceModal(){
-    if(!isStaff()){
-        toast("Employees cannot mark attendance for others", "error");
+    if(!canManageTeam()){
+        toast("Only Owners and assigned supervisors can mark team attendance", "error");
         return;
     }
     document.getElementById("attendanceModal").classList.add("show");
@@ -2774,8 +3471,8 @@ function loadEmployeeAttendanceData(){
 }
 
 function saveAttendance(){
-    if(!isStaff()){
-        alert("Employees cannot mark attendance. Apply regularize instead.");
+    if(!canManageTeam()){
+        alert("Only Owners and assigned supervisors can mark attendance for others.");
         return;
     }
     const date = document.getElementById("attDate").value;
@@ -2789,6 +3486,14 @@ function saveAttendance(){
     const employee = employees.find(e=>e.id === employeeId);
     if(!employee || employee.is_approved !== "Approved"){
         alert("Only owner-approved employees can mark attendance.");
+        return;
+    }
+    if(isEmployee() && !canManageEmployee(employee)){
+        alert("You can mark attendance only for employees assigned to you.");
+        return;
+    }
+    if(toBoolean(employee.is_not_working)){
+        alert("This employee is marked Not Working.");
         return;
     }
 
@@ -2825,7 +3530,8 @@ function saveAttendance(){
         regularized,
         status: document.getElementById("attStatus").value,
         remark: document.getElementById("attRemark").value,
-        is_approved
+        is_approved,
+        ownerUsername: employee.ownerUsername || resolveOwnerUsernameForSave(employee) || ""
     };
 
     if(!record.latIn) record.latIn = employee.latitude || "";
@@ -2841,7 +3547,56 @@ function saveAttendance(){
     closeModal("attendanceModal");
     renderAttendance();
     updateDashboard();
+
+    const prevIn = existing && existing.punchIn;
+    const prevOut = existing && existing.punchOut;
+    if(record.punchIn && record.punchIn !== prevIn) notifyOwnerPunch(employee, record, "in");
+    if(record.punchOut && record.punchOut !== prevOut){
+        setTimeout(()=>notifyOwnerPunch(employee, record, "out"), record.punchIn && record.punchIn !== prevIn ? 600 : 0);
+    }
     toast(regularized === "Yes" ? "Regularize sent to owner" : "Attendance saved");
+}
+
+function markTeamAttendanceBatch(){
+    if(!canManageTeam()){
+        toast("Only Owners and assigned supervisors can mark team attendance", "error");
+        return;
+    }
+    const date = document.getElementById("attendanceDate")?.value || todayKey();
+    const team = isTeamHead() ? myEmployee()?.team : document.getElementById("attendanceTeamFilter")?.value;
+    if(isOwner() && !team){
+        toast("Choose a team filter before batch attendance", "error");
+        return;
+    }
+    const members = approvedEmployees().filter(e => (!team || e.team === team) && !toBoolean(e.is_not_working));
+    if(!members.length){
+        toast("No active approved employees found for this team", "error");
+        return;
+    }
+    if(!confirm("Mark " + members.length + " team member(s) Present for " + formatDate(date) + "?")) return;
+    members.forEach(employee=>{
+        const existingIndex = attendance.findIndex(a=>a.date === date && a.employeeId === employee.id);
+        const existing = existingIndex >= 0 ? attendance[existingIndex] : {};
+        const record = Object.assign({}, existing, {
+            date, employeeId:employee.id, name:employee.name,
+            punchIn:existing.punchIn || "09:00", punchOut:existing.punchOut || "",
+            workingHours:calculateWorkingHours(existing.punchIn || "09:00", existing.punchOut || ""),
+            shift:existing.shift || "Day Shift", latIn:existing.latIn || employee.latitude || "",
+            longIn:existing.longIn || employee.longitude || "", latOut:existing.latOut || "",
+            longOut:existing.longOut || "", project:existing.project || employee.project || "",
+            company:existing.company || employee.company || "", overtime:existing.overtime || "0",
+            regularized:existing.regularized || "No", status:"Present",
+            remark:existing.remark || "Batch entry by " + (currentUser.username || "manager"),
+            is_approved:existing.is_approved || "N/A", ownerUsername:employee.ownerUsername || ""
+        });
+        attachPunchCodes(record, employee);
+        if(existingIndex >= 0) attendance[existingIndex] = record;
+        else attendance.push(record);
+    });
+    saveAttendanceData();
+    renderAttendance();
+    updateDashboard();
+    toast("Team attendance saved");
 }
 
 function openRegularizeModal(presetIndex){
@@ -2924,7 +3679,8 @@ function submitRegularize(){
         regularized: "Yes",
         status: existing.status || "Present",
         remark: reason,
-        is_approved: "Pending"
+        is_approved: "Pending",
+        ownerUsername: employee.ownerUsername || existing.ownerUsername || resolveOwnerUsernameForSave(employee) || ""
     };
 
     attachPunchCodes(record, employee);
@@ -3003,7 +3759,7 @@ function renderAttendance(){
                     ${a.regularized !== "Yes" || a.is_approved === "Rejected"
                         ? `<button class="btn btn-blue btn-sm" onclick="openRegularizeModal(${index})">Regularize</button>`
                         : ""}
-                    ${isStaff() && a.regularized === "Yes" && a.is_approved === "Pending"
+                    ${canManageTeam() && a.regularized === "Yes" && a.is_approved === "Pending"
                         ? `<button class="btn btn-success btn-sm" onclick="approveRegularize(${index})">Approve</button>`
                         : ""}
                     ${isStaff() ? `<button class="btn btn-danger btn-sm" onclick="deleteAttendance(${index})">Delete</button>` : ""}
@@ -3081,6 +3837,7 @@ function upsertMyAttendance(patch){
         status: existing.status || "Present",
         remark: existing.remark || "",
         is_approved: existing.is_approved || "N/A",
+        ownerUsername: existing.ownerUsername || employee.ownerUsername || "",
         ...patch
     };
     record.workingHours = calculateWorkingHours(record.punchIn, record.punchOut);
@@ -3114,13 +3871,13 @@ async function employeePunch(kind){
             return;
         }
         const loc = await captureLocation();
-        upsertMyAttendance({
+        const record = upsertMyAttendance({
             punchIn: nowTime(),
             status: "Present",
             latIn: loc.lat || employee.latitude || "",
             longIn: loc.lng || employee.longitude || ""
         });
-        toast("Punched in");
+        notifyOwnerPunch(employee, record, "in");
         return;
     }
     if(kind === "out"){
@@ -3133,12 +3890,12 @@ async function employeePunch(kind){
             return;
         }
         const loc = await captureLocation();
-        upsertMyAttendance({
+        const record = upsertMyAttendance({
             punchOut: nowTime(),
             latOut: loc.lat || employee.latitude || "",
             longOut: loc.lng || employee.longitude || ""
         });
-        toast("Punched out");
+        notifyOwnerPunch(employee, record, "out");
     }
 }
 
@@ -3182,7 +3939,7 @@ function renderEmpPunchStatus(){
 
 function updateAttendanceStats(){
     const today = todayKey();
-    const todayRecords = (isEmployee() ? visibleAttendance() : attendance).filter(a=>a.date === today);
+    const todayRecords = visibleAttendance().filter(a=>a.date === today);
     const present = todayRecords.filter(a=>a.status === "Present").length;
 
     document.getElementById("attendancePresent").innerText = present;
@@ -3193,7 +3950,7 @@ function updateAttendanceStats(){
         Math.max((isEmployee() ? (myEmployee() ? 1 : 0) : approvedEmployees().length) - present, 0));
 
     document.getElementById("regularizedCount").innerText =
-        (isEmployee() ? visibleAttendance() : attendance).filter(a=>a.regularized === "Yes" && a.is_approved === "Pending").length;
+        visibleAttendance().filter(a=>a.regularized === "Yes" && a.is_approved === "Pending").length;
 
     let totalMinutes = 0;
     todayRecords.forEach(a=>{
@@ -3231,9 +3988,9 @@ function renderApprovals(){
     document.getElementById("pendingEmpCount").innerText = pendingEmp.length;
     document.getElementById("pendingRegCount").innerText = pendingReg.length;
     document.getElementById("approvedEmpCount").innerText =
-        employees.filter(e=>e.is_approved === "Approved").length;
+        visibleEmployees().filter(e=>e.is_approved === "Approved").length;
     document.getElementById("approvedRegCount").innerText =
-        attendance.filter(a=>a.regularized === "Yes" && a.is_approved === "Approved").length;
+        visibleAttendance().filter(a=>a.regularized === "Yes" && a.is_approved === "Approved").length;
     document.getElementById("tabEmpCount").innerText = pendingEmp.length;
     document.getElementById("tabRegCount").innerText = pendingReg.length;
 
@@ -3321,8 +4078,9 @@ function rejectEmployee(index){
 }
 
 function approveRegularize(index){
-    if(!isStaff()){
-        toast("Only owner or admin can approve", "error");
+    const employee = employees.find(e=>e.id === attendance[index]?.employeeId);
+    if(!canManageTeam() || (isEmployee() && !canManageEmployee(employee))){
+        toast("You can approve requests only for employees assigned to you", "error");
         return;
     }
     attendance[index].is_approved = "Approved";
@@ -3334,8 +4092,9 @@ function approveRegularize(index){
 }
 
 function rejectRegularize(index){
-    if(!isStaff()){
-        toast("Only owner or admin can reject", "error");
+    const employee = employees.find(e=>e.id === attendance[index]?.employeeId);
+    if(!canManageTeam() || (isEmployee() && !canManageEmployee(employee))){
+        toast("You can reject requests only for employees assigned to you", "error");
         return;
     }
     if(!confirm("Reject this regularization request?")) return;
@@ -3367,19 +4126,19 @@ function updateDashboard(){
         document.getElementById("employeeApproved").innerText = mine && mine.is_approved === "Approved" ? 1 : 0;
         document.getElementById("employeePending").innerText = mine && mine.is_approved === "Pending" ? 1 : 0;
     }else{
-        document.getElementById("totalEmployees").innerText = employees.length;
+        document.getElementById("totalEmployees").innerText = visible.length;
         document.getElementById("activeEmployees").innerText = approvedActive;
-        document.getElementById("employeeCount").innerText = employees.length;
+        document.getElementById("employeeCount").innerText = visible.length;
         document.getElementById("employeeApproved").innerText =
-            employees.filter(e=>e.is_approved === "Approved").length;
+            visible.filter(e=>e.is_approved === "Approved").length;
         document.getElementById("employeePending").innerText = pendingEmp.length;
     }
 
-    const teams = new Set(employees.map(e=>e.team).filter(Boolean));
+    const teams = new Set(visible.map(e=>e.team).filter(Boolean));
     const teamCount = document.getElementById("teamCount");
     if(teamCount) teamCount.innerText = teams.size;
 
-    const projects = new Set((isEmployee() ? visible : employees).map(e=>e.project).filter(Boolean));
+    const projects = new Set(visible.map(e=>e.project).filter(Boolean));
     document.getElementById("projectCount").innerText = projects.size;
     if(!isEmployee()){
         document.getElementById("pendingApprovals").innerText = pending;
@@ -3421,7 +4180,7 @@ function updateDashboard(){
 
 function renderProjects(){
     const projects = {};
-    employees.forEach(e=>{
+    visibleEmployees().forEach(e=>{
         if(!e.project) return;
         if(!projects[e.project]) projects[e.project] = [];
         projects[e.project].push(e);
@@ -3496,6 +4255,31 @@ function rawSheetSettings(){
     return JSON.parse(localStorage.getItem("sheetSettings") || "{}");
 }
 
+function ownerHasSheets(user){
+    if(!user || user.role !== "owner") return false;
+    return !!(extractSheetId(user.employeeSheetId) && extractSheetId(user.attendanceSheetId));
+}
+
+function sheetConfigFromOwner(user){
+    if(!user) return null;
+    const global = sheetSettings();
+    const employeeSrc = user.employeeSheetId || "";
+    const attendanceSrc = user.attendanceSheetId || "";
+    const usersSrc = user.usersSheetId || global.usersSheetId || BUILT_IN_SHEETS.usersSheetId;
+    return {
+        employeeSheetId: extractSheetId(employeeSrc),
+        attendanceSheetId: extractSheetId(attendanceSrc),
+        usersSheetId: extractSheetId(usersSrc),
+        employeeGid: user.employeeGid || extractGid(employeeSrc) || "",
+        attendanceGid: user.attendanceGid || extractGid(attendanceSrc) || "",
+        usersGid: user.usersGid || extractGid(usersSrc) || global.usersGid || extractGid(BUILT_IN_SHEETS.usersSheetId),
+        ownerWhatsapp: String(user.ownerWhatsapp || "").trim(),
+        employeeSheetRaw: employeeSrc,
+        attendanceSheetRaw: attendanceSrc,
+        usersSheetRaw: usersSrc
+    };
+}
+
 function sheetSettings(){
     const saved = rawSheetSettings();
     const employeeSrc = saved.employeeSheetId || BUILT_IN_SHEETS.employeeSheetId;
@@ -3513,12 +4297,55 @@ function sheetSettings(){
     };
 }
 
+function activeSheetSettings(ownerUser){
+    const global = sheetSettings();
+    const owner = ownerUser || (isOwner() ? currentUser : workspaceOwner());
+    if(owner && owner.role === "owner"){
+        const own = sheetConfigFromOwner(owner);
+        return Object.assign({}, global, {
+            employeeSheetId: own.employeeSheetId,
+            attendanceSheetId: own.attendanceSheetId,
+            usersSheetId: own.usersSheetId || global.usersSheetId,
+            employeeGid: own.employeeGid || "",
+            attendanceGid: own.attendanceGid || "",
+            usersGid: own.usersGid || global.usersGid,
+            ownerWhatsapp: own.ownerWhatsapp || global.ownerWhatsapp
+        });
+    }
+    return global;
+}
+
+function sheetPayloadFields(settings){
+    const s = settings || activeSheetSettings();
+    return {
+        employeeSheetId: s.employeeSheetId || "",
+        attendanceSheetId: s.attendanceSheetId || "",
+        usersSheetId: s.usersSheetId || "",
+        employeeGid: s.employeeGid || "",
+        attendanceGid: s.attendanceGid || "",
+        usersGid: s.usersGid || ""
+    };
+}
+
+function authPayloadFields(){
+    return currentUser ? {
+        authUsername: currentUser.username || "",
+        authPassword: currentUser.password || ""
+    } : {};
+}
+
 function missingSheetFields(){
-    const s = sheetSettings();
+    if(isOwner() && currentUser){
+        const missing = [];
+        if(!extractSheetId(currentUser.employeeSheetId)) missing.push({key:"employeeSheetId", label:"Employee sheet"});
+        if(!extractSheetId(currentUser.attendanceSheetId)) missing.push({key:"attendanceSheetId", label:"Attendance sheet"});
+        return missing;
+    }
+    const s = activeSheetSettings();
     const missing = [];
-    if(!s.employeeSheetId) missing.push({key:"employeeSheetId", label:"Employee sheet"});
+    if(!s.usersSheetId) missing.push({key:"usersSheetId", label:"Owners sheet"});
+    if(!s.employeeSheetId) missing.push({key:"employeeSheetId", label:"Employee data sheet"});
     if(!s.attendanceSheetId) missing.push({key:"attendanceSheetId", label:"Attendance sheet"});
-    if(!s.usersSheetId) missing.push({key:"usersSheetId", label:"Login users sheet"});
     return missing;
 }
 
@@ -3563,7 +4390,7 @@ function updateSheetSetupUI(){
         statusBox.classList.toggle("warn", !connected);
         statusTitle.textContent = connected ? "Sheets connected" : "Sheet links missing";
         statusText.textContent = connected
-            ? "Employee, Attendance, and Login sheets are set"
+            ? "Employee data, Attendance, and Login accounts sheets are set"
             : missing.map(m => m.label).join(", ") + " not set";
     }
     if(statusBtn){
@@ -3656,32 +4483,9 @@ function parseCsv(text){
     });
 }
 
-function userFromSheetRow(row){
-    const username = pickRow(row, ["username", "user", "login", "user name", "userid"]);
-    const password = pickRow(row, ["password", "pass", "pw", "passwd"]);
-    const role = String(pickRow(row, ["role", "userrole", "type"]) || "employee").toLowerCase();
-    return makeUser({
-        username,
-        password,
-        mobile: pickRow(row, ["mobile", "phone", "whatsapp"]),
-        email: pickRow(row, ["email", "mail"]),
-        role: ["admin","owner","employee"].includes(role) ? role : "employee",
-        employeeId: pickRow(row, ["employeeId", "employeeid", "emp id", "id"]),
-        themeEditedAt: pickRow(row, ["themeEditedAt", "themeeditedat"]),
-        theme: {
-            preset: pickRow(row, ["themePreset", "preset"]) || "custom",
-            buttonColor: pickRow(row, ["buttonColor", "primary", "cta"]),
-            headerColor: pickRow(row, ["headerColor", "header"]),
-            bgColor: pickRow(row, ["bgColor", "bg"]),
-            textColor: pickRow(row, ["textColor", "text"]),
-            sidebarColor: pickRow(row, ["sidebarColor", "sidebar"]),
-            buttonStyle: pickRow(row, ["buttonStyle"])
-        }
-    });
-}
-
-function usersForSheet(){
-    return users.map(u => {
+function usersForSheet(ownerUser){
+    const list = users.filter(u => u.role === "admin" || u.role === "owner");
+    return list.map(u => {
         const t = cloneTheme(u.theme);
         return {
             username: u.username,
@@ -3689,7 +4493,8 @@ function usersForSheet(){
             mobile: u.mobile,
             email: u.email,
             role: u.role,
-            employeeId: u.employeeId || "",
+            is_paid: !!u.is_paid,
+            ad_links: Array.isArray(u.ad_links) ? JSON.stringify(u.ad_links) : (u.ad_links || ""),
             buttonColor: t.buttonColor,
             headerColor: t.headerColor,
             bgColor: t.bgColor,
@@ -3697,7 +4502,13 @@ function usersForSheet(){
             sidebarColor: t.sidebarColor,
             buttonStyle: t.buttonStyle,
             themePreset: t.preset,
-            themeEditedAt: u.themeEditedAt || ""
+            themeEditedAt: u.themeEditedAt || "",
+            employeeSheetId: u.employeeSheetId || "",
+            attendanceSheetId: u.attendanceSheetId || "",
+            "employee sheet": u.employeeSheetId || "",
+            "attendance sheet": u.attendanceSheetId || "",
+            usersSheetId: u.usersSheetId || "",
+            ownerWhatsapp: u.ownerWhatsapp || ""
         };
     });
 }
@@ -3730,12 +4541,79 @@ function mergeSheetUsers(rows){
 }
 
 function pickRow(row, keys){
+    const norm = (v) => String(v || "").toLowerCase().replace(/[\s_\-]+/g, "");
     for(const key of keys){
         if(row[key] != null && String(row[key]).trim() !== "") return String(row[key]).trim();
-        const found = Object.keys(row || {}).find(h => h.toLowerCase().trim() === String(key).toLowerCase());
+        const want = norm(key);
+        const found = Object.keys(row || {}).find(h => norm(h) === want);
         if(found && String(row[found]).trim() !== "") return String(row[found]).trim();
     }
     return "";
+}
+
+function looksLikeHexColor(value){
+    return /^#?[0-9A-Fa-f]{3}$|^#?[0-9A-Fa-f]{6}$/.test(String(value || "").trim());
+}
+
+function sheetLinksFromRow(row){
+    const namedEmp = pickRow(row, [
+        "employeeSheetId", "employeesheetid", "employee sheet", "employee data sheet",
+        "employeesheet", "emp sheet", "employee url", "employee link"
+    ]);
+    const namedAtt = pickRow(row, [
+        "attendanceSheetId", "attendancesheetid", "attendance sheet",
+        "attendancesheet", "attendance url", "attendance link"
+    ]);
+    const namedUsers = pickRow(row, [
+        "usersSheetId", "userssheetid", "login sheet", "users sheet", "owners sheet", "login accounts sheet"
+    ]);
+    const urls = Object.values(row || {})
+        .map(v => String(v || "").trim())
+        .filter(v => /spreadsheets\/d\//i.test(v) || (/^[a-zA-Z0-9-_]{25,}$/.test(v) && !looksLikeHexColor(v)));
+    return {
+        employeeSheetId: namedEmp || urls[0] || "",
+        attendanceSheetId: namedAtt || urls[1] || "",
+        usersSheetId: namedUsers || ""
+    };
+}
+
+function userFromSheetRow(row){
+    const username = pickRow(row, ["username", "user", "login", "user name", "userid"]);
+    const password = pickRow(row, ["password", "pass", "pw", "passwd"]);
+    const role = String(pickRow(row, ["role", "userrole", "type"]) || "employee").toLowerCase();
+    let buttonColor = pickRow(row, ["buttonColor", "primary", "cta"]);
+    let headerColor = pickRow(row, ["headerColor", "header"]);
+    let bgColor = pickRow(row, ["bgColor", "bg"]);
+    let textColor = pickRow(row, ["textColor", "text"]);
+    let sidebarColor = pickRow(row, ["sidebarColor", "sidebar"]);
+    let buttonStyle = pickRow(row, ["buttonStyle"]);
+    let themePreset = pickRow(row, ["themePreset", "preset"]) || "custom";
+
+    const sheets = sheetLinksFromRow(row);
+    return makeUser({
+        username,
+        password,
+        mobile: pickRow(row, ["mobile", "phone"]),
+        email: pickRow(row, ["email", "mail"]),
+        role: ["admin","owner","employee"].includes(role) ? role : "employee",
+        employeeId: "",
+        is_paid: toBoolean(pickRow(row, ["is_paid", "isPaid", "paid"])),
+        ad_links: pickRow(row, ["ad_links", "adLinks", "ads"]),
+        themeEditedAt: pickRow(row, ["themeEditedAt", "themeeditedat"]),
+        employeeSheetId: sheets.employeeSheetId,
+        attendanceSheetId: sheets.attendanceSheetId,
+        usersSheetId: sheets.usersSheetId,
+        ownerWhatsapp: pickRow(row, ["ownerWhatsapp", "ownerwhatsapp", "owner whatsapp", "whatsapp"]),
+        theme: {
+            preset: themePreset || "custom",
+            buttonColor,
+            headerColor,
+            bgColor,
+            textColor,
+            sidebarColor,
+            buttonStyle
+        }
+    });
 }
 
 function employeeFromSheetRow(row){
@@ -3744,6 +4622,7 @@ function employeeFromSheetRow(row){
     return {
         id,
         name: pickRow(row, ["name", "employeeName", "Employee Name"]),
+        password: pickRow(row, ["password", "pass", "pw"]),
         mobile: pickRow(row, ["mobile", "phone", "Mobile"]),
         joining: pickRow(row, ["joining", "date_joining", "joiningDate", "Date Joining"]),
         role: pickRow(row, ["role", "Role"]),
@@ -3760,22 +4639,90 @@ function employeeFromSheetRow(row){
         remarks: pickRow(row, ["remarks", "Remarks"]),
         latitude: pickRow(row, ["latitude", "lat", "Latitude"]),
         longitude: pickRow(row, ["longitude", "lng", "long", "Longitude"]),
-        is_approved: normalizeApproval(pickRow(row, ["is_approved", "isApproved", "approved"]), "Pending")
+        is_editable: toBoolean(pickRow(row, ["is_editable", "isEditable", "editable"])),
+        created_by: pickRow(row, ["created_by", "createdBy", "creator"]),
+        is_not_working: toBoolean(pickRow(row, ["is_not_working", "isNotWorking", "not working"])),
+        is_approved: normalizeApproval(pickRow(row, ["is_approved", "isApproved", "approved"]), "Pending"),
+        ownerUsername: pickRow(row, ["ownerUsername", "owner", "owner_username", "Owner"])
     };
 }
 
-function mergeSheetEmployees(rows){
+function attendanceFromSheetRow(row){
+    const employeeId = pickRow(row, ["employeeId", "employee_id", "id", "Employee ID"]);
+    const date = pickRow(row, ["date", "Date", "attendanceDate"]);
+    if(!employeeId && !date) return null;
+    return {
+        date: date || "",
+        employeeId: employeeId || "",
+        name: pickRow(row, ["name", "employeeName", "Employee Name"]),
+        punchIn: pickRow(row, ["punchIn", "punch_in", "in", "Punch In"]),
+        punchOut: pickRow(row, ["punchOut", "punch_out", "out", "Punch Out"]),
+        workingHours: pickRow(row, ["workingHours", "working_hours", "hours", "Working Hours"]),
+        shift: pickRow(row, ["shift", "Shift"]) || "Day Shift",
+        latIn: pickRow(row, ["latIn", "lat_in", "latitudeIn"]),
+        longIn: pickRow(row, ["longIn", "long_in", "longitudeIn"]),
+        latOut: pickRow(row, ["latOut", "lat_out", "latitudeOut"]),
+        longOut: pickRow(row, ["longOut", "long_out", "longitudeOut"]),
+        project: pickRow(row, ["project", "Project"]),
+        company: pickRow(row, ["company", "Company"]),
+        overtime: pickRow(row, ["overtime", "Overtime"]) || "0",
+        regularized: pickRow(row, ["regularized", "Regularized"]) || "No",
+        status: pickRow(row, ["status", "Status"]) || "Present",
+        remark: pickRow(row, ["remark", "remarks", "Remark"]),
+        is_approved: pickRow(row, ["is_approved", "isApproved", "approved"]) || "N/A",
+        punchCodeIn: pickRow(row, ["punchCodeIn", "punch_code_in", "codeIn"]),
+        punchCodeOut: pickRow(row, ["punchCodeOut", "punch_code_out", "codeOut"]),
+        ownerUsername: pickRow(row, ["ownerUsername", "owner", "Owner"])
+    };
+}
+
+function mergeSheetEmployees(rows, options){
+    const opts = options || {};
+    const ownerName = opts.ownerUsername || (isOwner() && currentUser ? currentUser.username : "");
     const incoming = rows.map(employeeFromSheetRow).filter(Boolean);
     if(!incoming.length) return 0;
+    if(opts.replaceOwner && ownerName){
+        employees = employees.filter(e => String(e.ownerUsername || "").toLowerCase() !== ownerName.toLowerCase());
+    }
     incoming.forEach(next => {
+        if(ownerName && !next.ownerUsername) next.ownerUsername = ownerName;
         const idx = employees.findIndex(e => e.id.toLowerCase() === next.id.toLowerCase());
         if(idx >= 0) employees[idx] = Object.assign({}, employees[idx], next);
         else employees.push(next);
     });
-    saveEmployees();
-    renderEmployees();
-    updateDashboard();
-    updateEmployeeFilters();
+    incoming.forEach(ensureEmployeeLogin);
+    localStorage.setItem("employees", JSON.stringify(employees));
+    saveUsers();
+    try{
+        renderEmployees();
+        updateDashboard();
+        updateEmployeeFilters();
+    }catch(err){ /* login screen */ }
+    return incoming.length;
+}
+
+function mergeSheetAttendance(rows, options){
+    const opts = options || {};
+    const ownerName = opts.ownerUsername || (isOwner() && currentUser ? currentUser.username : "");
+    const incoming = rows.map(attendanceFromSheetRow).filter(a => a && (a.employeeId || a.date));
+    if(!incoming.length) return 0;
+    if(opts.replaceOwner && ownerName){
+        attendance = attendance.filter(a => String(a.ownerUsername || "").toLowerCase() !== ownerName.toLowerCase());
+    }
+    incoming.forEach(next => {
+        if(ownerName && !next.ownerUsername) next.ownerUsername = ownerName;
+        if(!next.workingHours && next.punchIn && next.punchOut){
+            next.workingHours = calculateWorkingHours(next.punchIn, next.punchOut);
+        }
+        const idx = attendance.findIndex(a => a.date === next.date && a.employeeId === next.employeeId);
+        if(idx >= 0) attendance[idx] = Object.assign({}, attendance[idx], next);
+        else attendance.push(next);
+    });
+    localStorage.setItem("attendance", JSON.stringify(attendance));
+    try{
+        renderAttendance();
+        updateDashboard();
+    }catch(err){ /* login screen */ }
     return incoming.length;
 }
 
@@ -3855,24 +4802,22 @@ function fetchGvizJsonp(sheetId, gid){
 }
 
 async function fetchUsersFromSheet(silent){
-    const settings = sheetSettings();
+    if(!isAdmin()) return 0;
+    const settings = activeSheetSettings();
     const scriptUrl = (settings.appsScriptUrl || "").trim();
     const sheetId = (settings.usersSheetId || "").trim();
     if(!scriptUrl && !sheetId) return 0;
 
     const work = (async ()=>{
         if(scriptUrl){
-            const url = scriptUrl + (scriptUrl.includes("?") ? "&" : "?") + "action=getUsers";
+            const url = scriptUrl + (scriptUrl.includes("?") ? "&" : "?") + "action=getUsers&payload=" +
+                encodeURIComponent(JSON.stringify(Object.assign({}, sheetPayloadFields(settings), authPayloadFields())));
             const res = await fetch(url, {cache: "no-store"});
             if(res.ok){
                 const data = await res.json();
                 const rows = Array.isArray(data) ? data : (data.users || data.rows || []);
                 if(rows.length) return mergeSheetUsers(rows);
             }
-        }
-        if(sheetId){
-            const rows = await fetchCsvFromSheet(sheetId, settings.usersGid);
-            return mergeSheetUsers(rows);
         }
         return 0;
     })();
@@ -3891,24 +4836,33 @@ async function fetchUsersFromSheet(silent){
 }
 
 async function fetchEmployeesFromSheet(silent){
-    const settings = sheetSettings();
+    const settings = activeSheetSettings();
     const scriptUrl = (settings.appsScriptUrl || "").trim();
     const sheetId = (settings.employeeSheetId || "").trim();
     if(!scriptUrl && !sheetId) return 0;
 
     const work = (async ()=>{
         if(scriptUrl){
-            const url = scriptUrl + (scriptUrl.includes("?") ? "&" : "?") + "action=getEmployees";
+            const url = scriptUrl + (scriptUrl.includes("?") ? "&" : "?") + "action=getEmployees&payload=" +
+                encodeURIComponent(JSON.stringify(Object.assign({}, sheetPayloadFields(settings), authPayloadFields())));
             const res = await fetch(url, {cache: "no-store"});
             if(res.ok){
                 const data = await res.json();
                 const rows = Array.isArray(data) ? data : (data.employees || data.rows || []);
-                if(rows.length) return mergeSheetEmployees(rows);
+                if(rows.length){
+                    return mergeSheetEmployees(rows, {
+                        ownerUsername: isOwner() && currentUser ? currentUser.username : "",
+                        replaceOwner: isOwner()
+                    });
+                }
             }
         }
         if(sheetId){
             const rows = await fetchCsvFromSheet(sheetId, settings.employeeGid);
-            return mergeSheetEmployees(rows);
+            return mergeSheetEmployees(rows, {
+                ownerUsername: isOwner() && currentUser ? currentUser.username : "",
+                replaceOwner: isOwner()
+            });
         }
         return 0;
     })();
@@ -3926,52 +4880,318 @@ async function fetchEmployeesFromSheet(silent){
     }
 }
 
-async function pushUsersToSheet(){
-    const settings = sheetSettings();
-    const scriptUrl = (settings.appsScriptUrl || "").trim();
-    if(!scriptUrl) return;
+async function fetchAttendanceFromSheet(silent){
+    const settings = activeSheetSettings();
+    const sheetId = (settings.attendanceSheetId || "").trim();
+    if(!sheetId) return 0;
+    try{
+        const rows = await fetchCsvFromSheet(sheetId, settings.attendanceGid);
+        return mergeSheetAttendance(rows, {
+            ownerUsername: isOwner() && currentUser ? currentUser.username : "",
+            replaceOwner: isOwner()
+        });
+    }catch(err){
+        if(!silent){
+            toast("Could not fetch attendance sheet. Share it as Anyone with the link can view.", "error");
+        }
+        return 0;
+    }
+}
+
+async function loadOwnerLinkedSheets(ownerUser, silent){
+    const owner = ownerUser || (isOwner() ? currentUser : null);
+    if(!owner || owner.role !== "owner") return {employees: 0, attendance: 0};
+    if(!ownerHasSheets(owner)){
+        if(!silent){
+            toast("On the Owners sheet, fill employee sheet + attendance sheet for " + owner.username, "error");
+        }
+        return {employees: 0, attendance: 0};
+    }
+    const settings = activeSheetSettings(owner);
+    const scriptUrl = String(settings.appsScriptUrl || "").trim();
+    let empCount = 0;
+    let attCount = 0;
+    try{
+        let empRows;
+        if(scriptUrl){
+            const url = scriptUrl + (scriptUrl.includes("?") ? "&" : "?") + "action=getEmployees&payload=" +
+                encodeURIComponent(JSON.stringify(Object.assign({}, sheetPayloadFields(settings), authPayloadFields())));
+            const response = await fetch(url, {cache:"no-store"});
+            const data = await response.json();
+            empRows = Array.isArray(data) ? data : (data.rows || data.employees || []);
+        }else{
+            empRows = await fetchCsvFromSheet(settings.employeeSheetId, settings.employeeGid);
+        }
+        empCount = mergeSheetEmployees(empRows, {ownerUsername: owner.username, replaceOwner: true});
+    }catch(err){
+        if(!silent) toast("Could not load this owner's employee sheet", "error");
+    }
+    try{
+        let attRows;
+        if(scriptUrl){
+            const url = scriptUrl + (scriptUrl.includes("?") ? "&" : "?") + "action=getAttendance&payload=" +
+                encodeURIComponent(JSON.stringify(Object.assign({}, sheetPayloadFields(settings), authPayloadFields())));
+            const response = await fetch(url, {cache:"no-store"});
+            const data = await response.json();
+            attRows = Array.isArray(data) ? data : (data.rows || data.attendance || []);
+        }else{
+            attRows = await fetchCsvFromSheet(settings.attendanceSheetId, settings.attendanceGid);
+        }
+        attCount = mergeSheetAttendance(attRows, {ownerUsername: owner.username, replaceOwner: true});
+    }catch(err){
+        if(!silent) toast("Could not load this owner's attendance sheet", "error");
+    }
+    return {employees: empCount, attendance: attCount};
+}
+
+async function pushUsersToSheet(ownerUser){
+    if(!isAdmin()) return false;
+    const settings = activeSheetSettings(ownerUser);
+    await postToAppsScript(Object.assign({
+        action: "saveUsers",
+        users: usersForSheet(ownerUser || (isOwner() ? currentUser : null))
+    }, sheetPayloadFields(settings)), settings);
+}
+
+function employeesForOwner(ownerUsername){
+    const key = String(ownerUsername || "").toLowerCase();
+    if(!key) return employees.slice();
+    return employees.filter(e => String(e.ownerUsername || "").toLowerCase() === key);
+}
+
+function attendanceForOwner(ownerUsername){
+    const key = String(ownerUsername || "").toLowerCase();
+    if(!key) return attendance.slice();
+    return attendance.filter(a => {
+        if(String(a.ownerUsername || "").toLowerCase() === key) return true;
+        const emp = employees.find(e => e.id === a.employeeId);
+        return emp && String(emp.ownerUsername || "").toLowerCase() === key;
+    });
+}
+
+function employeesForSheet(ownerUsername){
+    const source = ownerUsername ? employeesForOwner(ownerUsername) : (isOwner() ? visibleEmployees() : employees);
+    return source.map(e => ({
+        id: e.id,
+        name: e.name,
+        password: e.password || loginPasswordForEmployee(e) || "",
+        mobile: e.mobile,
+        joining: e.joining,
+        role: e.role,
+        team: e.team,
+        leader: e.leader,
+        gender: e.gender,
+        company: e.company,
+        project: e.project,
+        type: e.type,
+        status: e.status,
+        email: e.email,
+        emergency: e.emergency,
+        address: e.address,
+        remarks: e.remarks,
+        latitude: e.latitude,
+        longitude: e.longitude,
+        is_editable: !!e.is_editable,
+        created_by: e.created_by || "",
+        is_not_working: !!e.is_not_working,
+        is_approved: e.is_approved,
+        ownerUsername: e.ownerUsername || ""
+    }));
+}
+
+function attendanceForSheet(ownerUsername){
+    const source = ownerUsername ? attendanceForOwner(ownerUsername) : (isOwner() ? visibleAttendance() : attendance);
+    return source.map(a => Object.assign({}, a, {
+        ownerUsername: a.ownerUsername || (employees.find(e => e.id === a.employeeId) || {}).ownerUsername || ""
+    }));
+}
+
+async function postToAppsScript(payload, settings){
+    const scriptUrl = String((settings || activeSheetSettings()).appsScriptUrl || appsScriptUrl() || "").trim();
+    if(!scriptUrl) return false;
     try{
         await fetch(scriptUrl, {
             method: "POST",
             mode: "no-cors",
-            headers: {"Content-Type": "text/plain"},
-            body: JSON.stringify({action: "saveUsers", users: usersForSheet()})
+            headers: {"Content-Type": "text/plain;charset=utf-8"},
+            body: JSON.stringify(Object.assign({}, sheetPayloadFields(settings || activeSheetSettings()), authPayloadFields(), payload))
         });
+        return true;
     }catch(err){
-        /* local save already succeeded */
+        return false;
     }
 }
 
+async function pushEmployeesToSheet(ownerUser){
+    const owner = ownerUser || (isOwner() ? currentUser : null);
+    const settings = activeSheetSettings(owner);
+    const ownerName = owner && owner.role === "owner" ? owner.username : "";
+    await postToAppsScript(Object.assign({
+        action: "saveEmployees",
+        employees: employeesForSheet(ownerName)
+    }, sheetPayloadFields(settings)), settings);
+}
+
+async function pushAttendanceToSheet(ownerUser){
+    const owner = ownerUser || (isOwner() ? currentUser : null);
+    const settings = activeSheetSettings(owner);
+    const ownerName = owner && owner.role === "owner" ? owner.username : "";
+    await postToAppsScript(Object.assign({
+        action: "saveAttendance",
+        attendance: attendanceForSheet(ownerName)
+    }, sheetPayloadFields(settings)), settings);
+}
+
+async function pushDataToOwnerSheets(ownerUsername){
+    const owner = users.find(u => u.role === "owner" && String(u.username || "").toLowerCase() === String(ownerUsername || "").toLowerCase());
+    if(!owner || !ownerHasSheets(owner)) return false;
+    await pushEmployeesToSheet(owner);
+    await pushUsersToSheet(owner);
+    await pushAttendanceToSheet(owner);
+    return true;
+}
+
+async function pushAllOwnerSheets(){
+    const owners = users.filter(u => u.role === "owner" && ownerHasSheets(u));
+    for(const owner of owners){
+        await pushDataToOwnerSheets(owner.username);
+    }
+}
+
+function appsScriptUrl(){
+    return String(activeSheetSettings().appsScriptUrl || document.getElementById("appsScriptUrl")?.value || "").trim();
+}
+
+function copyAppsScript(){
+    fetch("apps-script.gs").then(r=>r.text()).then(text=>{
+        navigator.clipboard.writeText(text).then(()=>{
+            toast("Apps Script copied. Paste it into script.google.com, deploy as Web app (Anyone), then paste the /exec URL in Settings.");
+        }).catch(()=>{
+            toast("Could not copy. Open attendence/apps-script.gs and paste it into script.google.com", "error");
+        });
+    }).catch(()=>{
+        toast("Open attendence/apps-script.gs, copy all, paste into script.google.com", "error");
+    });
+}
+
+function pingAppsScript(action, payload, settings){
+    return new Promise(resolve=>{
+        const cfg = settings || activeSheetSettings();
+        const base = String(cfg.appsScriptUrl || appsScriptUrl() || "").trim();
+        if(!base){
+            resolve(false);
+            return;
+        }
+        const name = "tappedWrite_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
+        const script = document.createElement("script");
+        const timer = setTimeout(()=>{
+            cleanup();
+            resolve(true);
+        }, 8000);
+        function cleanup(){
+            clearTimeout(timer);
+            try{ delete window[name]; }catch(err){ window[name] = undefined; }
+            if(script.parentNode) script.parentNode.removeChild(script);
+        }
+        window[name] = function(){
+            cleanup();
+            resolve(true);
+        };
+        script.onerror = function(){
+            cleanup();
+            resolve(false);
+        };
+        const body = Object.assign({}, sheetPayloadFields(cfg), authPayloadFields(), payload || {});
+        const sep = base.indexOf("?") >= 0 ? "&" : "?";
+        script.src = base + sep + "action=" + encodeURIComponent(action) +
+            "&payload=" + encodeURIComponent(JSON.stringify(body)) +
+            "&callback=" + name;
+        document.head.appendChild(script);
+    });
+}
+
+async function pushEmployeeToGoogle(employee){
+    if(!appsScriptUrl()){
+        alert("Employee saved in this app only. It is NOT in Google Sheets yet.\n\nDo this once:\n1. Open script.google.com → New project\n2. Settings → Copy Apps Script (or open attendence/apps-script.gs)\n3. Deploy → Web app → Execute as Me → Who has access: Anyone\n4. Paste the /exec URL in Settings → Google Apps Script API URL → Save Settings\n5. Save the employee again.");
+        showPageByName("settings");
+        return false;
+    }
+    const owner = ownerOfEmployee(employee) || (isOwner() ? currentUser : null);
+    const settings = activeSheetSettings(owner);
+    if(owner && !ownerHasSheets(owner)){
+        toast("This owner has no Google Sheets yet. Admin must add sheets for the owner.", "error");
+        return false;
+    }
+    const ownerName = owner && owner.role === "owner" ? owner.username : (employee.ownerUsername || "");
+    const empRow = employeesForSheet(ownerName).find(e => e.id === employee.id) || Object.assign({}, employee);
+    const userRow = usersForSheet(owner).find(u => u.employeeId === employee.id || u.username === String(employee.id).toLowerCase());
+    const okEmp = await pingAppsScript("upsertEmployee", empRow, settings);
+    if(userRow) await pingAppsScript("upsertUser", userRow, settings);
+    await postToAppsScript({action:"saveEmployees", employees: employeesForSheet(ownerName)}, settings);
+    await postToAppsScript({action:"saveUsers", users: usersForSheet(owner)}, settings);
+    if(okEmp) toast("Sent to " + (owner ? owner.username + "'s" : "default") + " Google Employee sheet. Refresh the sheet.");
+    else toast("Could not reach Apps Script. Check the /exec URL and Deploy access: Anyone.", "error");
+    return okEmp;
+}
+
 async function syncSheets(){
+    toast("Loading Owners sheet…");
+    const userCount = await fetchUsersFromSheet(false);
+    if(currentUser && currentUser.role === "owner"){
+        const fresh = users.find(u => u.username === currentUser.username) || currentUser;
+        currentUser = fresh;
+        persistCurrentUser();
+        loadSettings();
+        const loaded = await loadOwnerLinkedSheets(fresh, false);
+        toast("Loaded " + loaded.employees + " employee(s) and " + loaded.attendance + " attendance row(s) from your linked sheets");
+        renderApprovals();
+        renderAttendance();
+        renderEmployees();
+        updateDashboard();
+        return;
+    }
     if(missingSheetFields().length){
         updateSheetSetupUI();
-        document.getElementById("appSheetSetup")?.scrollIntoView({behavior:"smooth", block:"start"});
-        toast("Add all 3 sheet links first", "error");
+        toast("Add Owners sheet + default sheets in Settings", "error");
         return;
     }
     saveSettings();
-    toast("Syncing employees and login sheet…");
-    const [empCount, userCount] = await Promise.all([
+    const [empCount, attCount] = await Promise.all([
         fetchEmployeesFromSheet(false),
-        fetchUsersFromSheet(true)
+        fetchAttendanceFromSheet(true)
     ]);
-    if(empCount || userCount){
-        toast("Synced " + empCount + " employee(s) and " + userCount + " login user(s)");
-        renderApprovals();
-        renderAttendance();
-    }else if(!sheetSettings().employeeSheetId && !sheetSettings().usersSheetId && !sheetSettings().appsScriptUrl){
-        toast("Add Employee / Login sheet IDs in Settings first", "error");
+    toast("Synced " + userCount + " owner/login row(s), " + empCount + " employee(s), " + attCount + " attendance");
+    renderApprovals();
+    renderAttendance();
+    renderEmployees();
+    updateDashboard();
+    if(activeSheetSettings().appsScriptUrl){
+        await pushEmployeesToSheet();
+        await pushUsersToSheet();
+        await pushAttendanceToSheet();
+        await pushAllOwnerSheets();
     }
 }
 
 function saveSettings(){
+    const employeeRaw = document.getElementById("employeeSheetId").value.trim();
+    const attendanceRaw = document.getElementById("attendanceSheetId").value.trim();
+    const usersRaw = document.getElementById("usersSheetId").value.trim();
+    const whatsapp = document.getElementById("ownerWhatsapp").value.trim();
+    const scriptUrl = document.getElementById("appsScriptUrl").value.trim();
+
+    if(isOwner() && currentUser){
+        toast("Only Admin can update Owner Sheet settings", "error");
+        return;
+    }
+
     const current = rawSheetSettings();
     const settings = {
-        employeeSheetId: extractSheetId(document.getElementById("employeeSheetId").value || current.employeeSheetId || BUILT_IN_SHEETS.employeeSheetId),
-        attendanceSheetId: extractSheetId(document.getElementById("attendanceSheetId").value || current.attendanceSheetId || BUILT_IN_SHEETS.attendanceSheetId),
-        usersSheetId: extractSheetId(document.getElementById("usersSheetId").value || current.usersSheetId || BUILT_IN_SHEETS.usersSheetId),
-        ownerWhatsapp: document.getElementById("ownerWhatsapp").value.trim(),
-        appsScriptUrl: document.getElementById("appsScriptUrl").value.trim() || current.appsScriptUrl || BUILT_IN_SHEETS.appsScriptUrl
+        employeeSheetId: extractSheetId(employeeRaw || current.employeeSheetId || BUILT_IN_SHEETS.employeeSheetId),
+        attendanceSheetId: extractSheetId(attendanceRaw || current.attendanceSheetId || BUILT_IN_SHEETS.attendanceSheetId),
+        usersSheetId: extractSheetId(usersRaw || current.usersSheetId || BUILT_IN_SHEETS.usersSheetId),
+        ownerWhatsapp: whatsapp,
+        appsScriptUrl: scriptUrl || current.appsScriptUrl || BUILT_IN_SHEETS.appsScriptUrl
     };
     localStorage.setItem("sheetSettings", JSON.stringify(settings));
     updateSheetSetupUI();
@@ -3979,35 +5199,101 @@ function saveSettings(){
 }
 
 function loadSettings(){
-    const settings = sheetSettings();
+    const global = sheetSettings();
     const saved = rawSheetSettings();
+    const oldScripts = [
+        "https://script.google.com/macros/s/AKfycbxI8Sqsujoq4EsRZ1wcOhHPdCf6j-vgxj_10N65_pMg6iUAyp2tuQ9xcEE33SG5uwYaZw/exec",
+        "https://script.google.com/macros/s/AKfycbwGiN4l5gNX1HX3-uXbOaJWkcm7Bc127R7PB3qW47f31JNPz8aYne9T2P5y0bwtlPm4/exec"
+    ];
+    if(!String(saved.appsScriptUrl || "").trim() || oldScripts.includes(String(saved.appsScriptUrl).trim())){
+        saved.appsScriptUrl = BUILT_IN_SHEETS.appsScriptUrl;
+        localStorage.setItem("sheetSettings", JSON.stringify(Object.assign({}, saved, {
+            appsScriptUrl: BUILT_IN_SHEETS.appsScriptUrl
+        })));
+    }
     const setVal = (id, value) => {
         const el = document.getElementById(id);
         if(el) el.value = value || "";
     };
-    setVal("employeeSheetId", displaySheetValue(saved.employeeSheetId, BUILT_IN_SHEETS.employeeSheetId));
-    setVal("attendanceSheetId", displaySheetValue(saved.attendanceSheetId, BUILT_IN_SHEETS.attendanceSheetId));
-    setVal("usersSheetId", displaySheetValue(saved.usersSheetId, BUILT_IN_SHEETS.usersSheetId));
-    setVal("ownerWhatsapp", settings.ownerWhatsapp);
+    const active = activeSheetSettings();
+    const ownerCfg = isOwner() ? sheetConfigFromOwner(currentUser) : null;
+    if(ownerCfg && ownerHasSheets(currentUser)){
+        setVal("employeeSheetId", ownerCfg.employeeSheetRaw || ownerCfg.employeeSheetId);
+        setVal("attendanceSheetId", ownerCfg.attendanceSheetRaw || ownerCfg.attendanceSheetId);
+        setVal("usersSheetId", ownerCfg.usersSheetRaw || ownerCfg.usersSheetId);
+        setVal("ownerWhatsapp", ownerCfg.ownerWhatsapp);
+    }else{
+        setVal("employeeSheetId", displaySheetValue(saved.employeeSheetId, BUILT_IN_SHEETS.employeeSheetId));
+        setVal("attendanceSheetId", displaySheetValue(saved.attendanceSheetId, BUILT_IN_SHEETS.attendanceSheetId));
+        setVal("usersSheetId", displaySheetValue(saved.usersSheetId, BUILT_IN_SHEETS.usersSheetId));
+        setVal("ownerWhatsapp", global.ownerWhatsapp);
+    }
     setVal("appsScriptUrl", displaySheetValue(saved.appsScriptUrl, BUILT_IN_SHEETS.appsScriptUrl));
+    setVal("setupScriptUrl", displaySheetValue(saved.appsScriptUrl, BUILT_IN_SHEETS.appsScriptUrl));
+    const sub = document.getElementById("sheetsSettingsSub");
+    if(sub){
+        sub.textContent = isOwner()
+            ? "Employee + Attendance sheets come from your row on the Owners sheet. Sync to reload."
+            : "Set the Owners sheet URL. Each owner row’s employee sheet + attendance sheet columns drive that owner’s data.";
+    }
     updateSheetSetupUI();
 }
 
-function getOwnerWhatsapp(){
-    const settings = JSON.parse(localStorage.getItem("sheetSettings") || "{}");
-    let num = String(settings.ownerWhatsapp || document.getElementById("ownerWhatsapp")?.value || "").replace(/\D/g, "");
+function getOwnerWhatsapp(employee){
+    const emp = employee || (isEmployee() ? myEmployee() : null);
+    const owner = ownerOfEmployee(emp);
+    let raw = "";
+    if(owner && owner.ownerWhatsapp) raw = owner.ownerWhatsapp;
+    else if(isOwner() && currentUser && currentUser.ownerWhatsapp) raw = currentUser.ownerWhatsapp;
+    else raw = activeSheetSettings().ownerWhatsapp || document.getElementById("ownerWhatsapp")?.value || "";
+    return normalizeWhatsAppNumber(raw);
+}
+
+function normalizeWhatsAppNumber(value){
+    let num = String(value || "").replace(/\D/g, "");
     if(num.length === 10) num = "91" + num;
+    if(num.length < 10) return "";
     return num;
 }
 
-function sendWhatsAppToOwner(text){
-    const number = getOwnerWhatsapp();
+function punchAlertMessage(employee, record, kind){
+    const isOut = kind === "out";
+    const code = isOut ? record.punchCodeOut : record.punchCodeIn;
+    const time = isOut ? record.punchOut : record.punchIn;
+    const lat = isOut ? record.latOut : record.latIn;
+    const lng = isOut ? record.longOut : record.longIn;
+    const lines = [
+        "Tapped Punch " + (isOut ? "Out" : "In"),
+        "Code: " + (code || "-"),
+        "Employee: " + (employee.name || "-") + " (" + (employee.id || "-") + ")",
+        "Mobile: " + (employee.mobile || "-"),
+        "Date: " + formatDate(record.date),
+        "Time: " + formatTime(time),
+        "Project: " + (record.project || employee.project || "-"),
+        "Company: " + (record.company || employee.company || "-"),
+        "Location: " + (lat || "-") + ", " + (lng || "-")
+    ];
+    if(isOut) lines.push("Working hours: " + (record.workingHours || "-"));
+    return lines.join("\n");
+}
+
+function sendWhatsAppToOwner(text, employee){
+    const number = getOwnerWhatsapp(employee);
     if(!number){
-        toast("Add an owner WhatsApp number in Settings first", "error");
+        toast("Add WhatsApp number for this owner (Owners → Edit or Settings)", "error");
         return false;
     }
     window.open("https://wa.me/" + number + "?text=" + encodeURIComponent(text), "_blank");
     return true;
+}
+
+function notifyOwnerPunch(employee, record, kind){
+    if(!employee || !record) return false;
+    const code = kind === "out" ? record.punchCodeOut : record.punchCodeIn;
+    if(!code && !(kind === "out" ? record.punchOut : record.punchIn)) return false;
+    const sent = sendWhatsAppToOwner(punchAlertMessage(employee, record, kind), employee);
+    if(sent) toast("Punch " + (kind === "out" ? "out" : "in") + " sent to owner WhatsApp");
+    return sent;
 }
 
 function loginAlertMessage(user){
@@ -4031,27 +5317,70 @@ function makeUser(data){
         email: data.email,
         role: data.role,
         employeeId: data.employeeId || "",
+        ownerUsername: data.ownerUsername || "",
+        is_paid: toBoolean(data.is_paid),
+        ad_links: data.ad_links || "",
         theme: cloneTheme(data.theme || DEFAULT_THEME),
-        themeEditedAt: data.themeEditedAt || ""
+        themeEditedAt: data.themeEditedAt || "",
+        employeeSheetId: data.employeeSheetId || "",
+        attendanceSheetId: data.attendanceSheetId || "",
+        usersSheetId: data.usersSheetId || "",
+        employeeGid: data.employeeGid || extractGid(data.employeeSheetId) || "",
+        attendanceGid: data.attendanceGid || extractGid(data.attendanceSheetId) || "",
+        usersGid: data.usersGid || extractGid(data.usersSheetId) || "",
+        ownerWhatsapp: data.ownerWhatsapp || ""
     };
 }
 
+function loginPasswordForEmployee(employee){
+    if(!employee) return "";
+    if(employee.password) return employee.password;
+    const linked = users.find(u => u.employeeId === employee.id || u.username.toLowerCase() === String(employee.id).toLowerCase());
+    if(linked && linked.password) return linked.password;
+    return String(employee.mobile || "").slice(-4);
+}
+
 function ensureEmployeeLogin(employee){
-    if(users.some(u=>u.employeeId === employee.id || u.username.toLowerCase() === employee.id.toLowerCase())) return;
+    if(!employee || !employee.id) return;
+    const password = loginPasswordForEmployee(employee);
+    const idUser = String(employee.id).toLowerCase();
+    const nameUser = employeeNameUsername(employee);
+    const idx = users.findIndex(u =>
+        u.employeeId === employee.id ||
+        String(u.employeeId).toLowerCase() === idUser ||
+        u.username.toLowerCase() === idUser ||
+        (nameUser && u.username.toLowerCase() === nameUser)
+    );
+    const preferred = (nameUser && !users.some(u => u.username.toLowerCase() === nameUser && u.employeeId && String(u.employeeId).toLowerCase() !== idUser))
+        ? nameUser
+        : idUser;
+    if(idx >= 0){
+        if(preferred && users[idx].username.toLowerCase() !== preferred){
+            const taken = users.some((u, i) => i !== idx && u.username.toLowerCase() === preferred);
+            if(!taken) users[idx].username = preferred;
+        }
+        users[idx].password = password || users[idx].password;
+        users[idx].mobile = employee.mobile || users[idx].mobile;
+        users[idx].email = employee.email || users[idx].email;
+        users[idx].role = "employee";
+        users[idx].employeeId = employee.id;
+        if(!employee.password) employee.password = users[idx].password;
+        return;
+    }
     users.push(makeUser({
-        username: employee.id.toLowerCase(),
-        password: String(employee.mobile).slice(-4) || "emp123",
+        username: preferred || idUser,
+        password: password || "emp123",
         mobile: employee.mobile,
         email: employee.email || "",
         role: "employee",
         employeeId: employee.id
     }));
-    saveUsers();
+    if(!employee.password) employee.password = password || "emp123";
 }
 
 function addLoginUser(){
-    if(!isStaff()){
-        toast("You cannot add users", "error");
+    if(!isAdmin()){
+        toast("Only Admin can add login-sheet users", "error");
         return;
     }
     const username = document.getElementById("newUserName").value.trim();
@@ -4069,8 +5398,8 @@ function addLoginUser(){
         alert("Enter a valid 10 digit mobile number.");
         return;
     }
-    if(role === "owner" && !isAdmin()){
-        alert("Owner cannot create another owner. Ask an admin.");
+    if(role === "owner"){
+        alert("Create owners only from the Admin → Owners page.");
         return;
     }
     if(users.some(u=>u.username.toLowerCase() === username.toLowerCase())){
@@ -4102,6 +5431,12 @@ function addOwnerUser(){
     const password = document.getElementById("newOwnerPass").value;
     const mobile = document.getElementById("newOwnerMobile").value.trim();
     const email = document.getElementById("newOwnerEmail").value.trim();
+    const employeeSheetId = document.getElementById("newOwnerEmployeeSheet").value.trim();
+    const attendanceSheetId = document.getElementById("newOwnerAttendanceSheet").value.trim();
+    const usersSheetId = document.getElementById("newOwnerUsersSheet").value.trim();
+    const ownerWhatsapp = document.getElementById("newOwnerWhatsapp").value.trim();
+    const is_paid = document.getElementById("newOwnerIsPaid").checked;
+    const ad_links = document.getElementById("newOwnerAdLinks").value.trim();
 
     if(!username || !password || !mobile || !email){
         alert("Username, password, mobile and email are required.");
@@ -4111,12 +5446,21 @@ function addOwnerUser(){
         alert("Enter a valid 10 digit mobile number.");
         return;
     }
+    if(!extractSheetId(employeeSheetId) || !extractSheetId(attendanceSheetId)){
+        alert("Each owner needs Employee sheet + Attendance sheet links (from the Owners sheet columns).");
+        return;
+    }
     if(users.some(u=>u.username.toLowerCase() === username.toLowerCase())){
         alert("Username already exists.");
         return;
     }
 
-    users.push(makeUser({username, password, mobile, email, role:"owner"}));
+    users.push(makeUser({
+        username, password, mobile, email, role:"owner",
+        employeeSheetId, attendanceSheetId,
+        usersSheetId: usersSheetId || BUILT_IN_SHEETS.usersSheetId,
+        ownerWhatsapp, is_paid, ad_links
+    }));
     saveUsers();
     renderOwners();
     renderUsers();
@@ -4124,9 +5468,140 @@ function addOwnerUser(){
     document.getElementById("newOwnerPass").value = "";
     document.getElementById("newOwnerMobile").value = "";
     document.getElementById("newOwnerEmail").value = "";
-    toast("Owner user added");
+    document.getElementById("newOwnerEmployeeSheet").value = "";
+    document.getElementById("newOwnerAttendanceSheet").value = "";
+    document.getElementById("newOwnerUsersSheet").value = "";
+    document.getElementById("newOwnerWhatsapp").value = "";
+    document.getElementById("newOwnerIsPaid").checked = false;
+    document.getElementById("newOwnerAdLinks").value = "";
+    toast("Owner added with separate Google Sheets");
     pushUsersToSheet();
+}
+
+function openEditOwnerModal(index){
+    const user = users[index];
+    if(!user || user.role !== "owner") return;
+    if(!isAdmin()){
+        toast("Only Admin can read or update Owner Sheet records", "error");
+        return;
+    }
+    document.getElementById("editOwnerIndex").value = String(index);
+    document.getElementById("editOwnerLabel").textContent = user.username;
+    document.getElementById("editOwnerName").value = user.username || "";
+    document.getElementById("editOwnerPass").value = user.password || "";
+    document.getElementById("editOwnerMobile").value = user.mobile || "";
+    document.getElementById("editOwnerEmail").value = user.email || "";
+    document.getElementById("editOwnerEmployeeSheet").value = user.employeeSheetId || "";
+    document.getElementById("editOwnerAttendanceSheet").value = user.attendanceSheetId || "";
+    document.getElementById("editOwnerUsersSheet").value = user.usersSheetId || "";
+    document.getElementById("editOwnerWhatsapp").value = user.ownerWhatsapp || "";
+    document.getElementById("editOwnerIsPaid").checked = toBoolean(user.is_paid);
+    document.getElementById("editOwnerAdLinks").value = Array.isArray(user.ad_links) ? JSON.stringify(user.ad_links) : (user.ad_links || "");
+    const nameInput = document.getElementById("editOwnerName");
+    nameInput.disabled = false;
+    document.getElementById("editOwnerModal").classList.add("show");
+}
+
+function openOwnerSheetsModal(index){ openEditOwnerModal(index); }
+
+function saveOwnerEdit(){
+    if(!isAdmin()){
+        toast("Only Admin can update Owner Sheet records", "error");
+        return;
+    }
+    const index = Number(document.getElementById("editOwnerIndex").value);
+    const user = users[index];
+    if(!user || user.role !== "owner") return;
+    if(isOwner() && currentUser && user.username !== currentUser.username){
+        toast("You can only edit your own profile", "error");
+        return;
+    }
+
+    const oldUsername = user.username;
+    const username = document.getElementById("editOwnerName").value.trim();
+    const password = document.getElementById("editOwnerPass").value;
+    const mobile = document.getElementById("editOwnerMobile").value.trim();
+    const email = document.getElementById("editOwnerEmail").value.trim();
+    const employeeSheetId = document.getElementById("editOwnerEmployeeSheet").value.trim();
+    const attendanceSheetId = document.getElementById("editOwnerAttendanceSheet").value.trim();
+    const usersSheetId = document.getElementById("editOwnerUsersSheet").value.trim();
+    const ownerWhatsapp = document.getElementById("editOwnerWhatsapp").value.trim();
+    const is_paid = document.getElementById("editOwnerIsPaid").checked;
+    const ad_links = document.getElementById("editOwnerAdLinks").value.trim();
+
+    if(!username || !password || !mobile || !email){
+        alert("Username, password, mobile and email are required.");
+        return;
+    }
+    if(!/^[0-9]{10}$/.test(mobile)){
+        alert("Enter a valid 10 digit mobile number.");
+        return;
+    }
+    if(!extractSheetId(employeeSheetId) || !extractSheetId(attendanceSheetId)){
+        alert("Employee sheet and Attendance sheet links are required for this owner.");
+        return;
+    }
+    if(users.some((u, i) => i !== index && u.username.toLowerCase() === username.toLowerCase())){
+        alert("Username already exists.");
+        return;
+    }
+    if(isOwner() && !isAdmin() && username.toLowerCase() !== oldUsername.toLowerCase()){
+        alert("Owner cannot change username. Ask an admin.");
+        return;
+    }
+
+    users[index].username = username;
+    users[index].password = password;
+    users[index].mobile = mobile;
+    users[index].email = email;
+    users[index].employeeSheetId = employeeSheetId;
+    users[index].attendanceSheetId = attendanceSheetId;
+    users[index].usersSheetId = usersSheetId || users[index].usersSheetId || BUILT_IN_SHEETS.usersSheetId;
+    users[index].employeeGid = extractGid(employeeSheetId) || "";
+    users[index].attendanceGid = extractGid(attendanceSheetId) || "";
+    users[index].usersGid = extractGid(usersSheetId) || "";
+    users[index].ownerWhatsapp = ownerWhatsapp;
+    users[index].is_paid = is_paid;
+    users[index].ad_links = ad_links;
+
+    if(oldUsername !== username){
+        employees.forEach(e => {
+            if(String(e.ownerUsername || "").toLowerCase() === oldUsername.toLowerCase()){
+                e.ownerUsername = username;
+            }
+        });
+        attendance.forEach(a => {
+            if(String(a.ownerUsername || "").toLowerCase() === oldUsername.toLowerCase()){
+                a.ownerUsername = username;
+            }
+        });
+        localStorage.setItem("employees", JSON.stringify(employees));
+        localStorage.setItem("attendance", JSON.stringify(attendance));
+    }
+
+    if(currentUser && currentUser.username === oldUsername){
+        currentUser = users[index];
+        persistCurrentUser();
+        loadSettings();
+        document.getElementById("loggedUserName").textContent = currentUser.username;
+        document.getElementById("loggedAvatar").textContent = currentUser.username.charAt(0).toUpperCase();
+    }
+
+    saveUsers();
+    renderOwners();
+    renderUsers();
+    closeModal("editOwnerModal");
+    toast("Owner updated");
+    pushDataToOwnerSheets(username);
     pushUsersToSheet();
+}
+
+function saveOwnerSheets(){ saveOwnerEdit(); }
+
+function ownerSheetsLabel(user){
+    return ownerHasSheets(user)
+        ? `<span class="badge badge-green">3 sheets linked</span>`
+        : `<span class="badge badge-orange">Sheets missing</span>`;
 }
 
 function canDeleteUser(user){
@@ -4181,19 +5656,28 @@ function renderOwners(){
     if(!tbody) return;
     const owners = users.map((u, index)=>({u, index})).filter(item=>item.u.role === "owner");
     if(!owners.length){
-        tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><strong>No owners yet</strong>Admin can add an owner login here.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9"><div class="empty"><strong>No owners yet</strong>Admin can add an owner login with separate Google Sheets here.</div></td></tr>`;
         return;
     }
-    tbody.innerHTML = owners.map(({u, index})=>`
+    tbody.innerHTML = owners.map(({u, index})=>{
+        const canEdit = isAdmin();
+        const actions = [
+            canEdit ? `<button class="btn btn-secondary btn-sm" onclick="openEditOwnerModal(${index})">Edit</button>` : "",
+            isAdmin() ? `<button class="btn btn-danger btn-sm" onclick="deleteLoginUser(${index})">Delete</button>` : ""
+        ].filter(Boolean).join(" ") || "-";
+        return `
         <tr>
             <td><strong>${u.username}</strong></td>
             <td>${u.password}</td>
             <td>${u.mobile}</td>
             <td>${u.email}</td>
+            <td>${toBoolean(u.is_paid) ? `<span class="badge badge-green">Paid</span>` : `<span class="badge badge-orange">Free</span>`}</td>
+            <td>${parseAdLinks(u.ad_links).length} image(s)</td>
+            <td>${ownerSheetsLabel(u)}</td>
             <td>${themeLabel(u)}</td>
-            <td>${isAdmin() ? `<button class="btn btn-danger btn-sm" onclick="deleteLoginUser(${index})">Delete</button>` : "-"}</td>
-        </tr>
-    `).join("");
+            <td style="white-space:nowrap;">${actions}</td>
+        </tr>`;
+    }).join("");
 }
 
 function exportUsers(){
